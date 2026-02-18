@@ -336,7 +336,7 @@ def main():
     # Auto-detect: if local datalake.duckdb exists in common locations, use it
     if not local and not hf:
         for candidate in [
-            Path("/mnt/nvme03/science_datalake"),
+            Path(__file__).resolve().parent,
             Path.home() / "science_datalake",
             Path("."),
         ]:

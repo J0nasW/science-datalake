@@ -4,7 +4,7 @@
 > **LLM/Agent?** See [SCHEMA.md](SCHEMA.md) for complete table/column reference.
 > This file provides detailed example queries, data quirks, and narrative documentation.
 
-A unified, portable data lake of scientific publication data on a 4TB NVME drive.
+A unified, portable data lake of scientific publication data.
 Three core bibliometric datasets (~250M+ papers each), plus Papers With Code (ML method-task-dataset-code mappings),
 the Computer Science Ontology (14K+ CS topics), Retraction Watch (69K retraction records), Reliance on Science
 (47.8M patent→paper citations), and PreprintToPaper (146K preprint→publication mappings), all queryable via DuckDB.
@@ -13,7 +13,7 @@ the Computer Science Ontology (14K+ CS topics), Retraction Watch (69K retraction
 
 ```python
 import duckdb
-conn = duckdb.connect('/mnt/nvme03/science_datalake/datalake.duckdb', read_only=True)
+conn = duckdb.connect('datalake.duckdb', read_only=True)
 
 # Query any dataset using schema-qualified names
 conn.sql("SELECT * FROM s2ag.papers WHERE year = 2024 LIMIT 5").show()

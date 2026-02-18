@@ -1,7 +1,7 @@
 # Science Data Lake - Schema Reference
 
 > LLM-optimized reference for querying the science data lake.
-> Connection: `duckdb.connect('/mnt/nvme03/science_datalake/datalake.duckdb', read_only=True)`
+> Connection: `duckdb.connect('datalake.duckdb', read_only=True)`
 > Schemas: `s2ag`, `sciscinet`, `openalex`, `pwc`, 13 ontology schemas (`mesh`, `go`, `chebi`, `ncit`, `hpo`, `agrovoc`, `cso`, `doid`, `edam`, `stw`, `msc2020`, `physh`, `unesco`), `retwatch`, `ros`, `p2p`, `xref` | 148 views (including 8 backward-compat aliases in `main`)
 
 ---

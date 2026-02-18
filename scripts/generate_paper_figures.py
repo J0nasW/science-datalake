@@ -32,7 +32,8 @@ import numpy as np
 import pandas as pd
 
 # ── Paths ──────────────────────────────────────────────────────────────────
-ROOT = Path("/mnt/nvme03/science_datalake")
+# Resolve root relative to this script: scripts/ -> parent is repo root
+ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = str(ROOT / "datalake.duckdb")
 OUT_DIR = ROOT / "paper" / "figures"
 OUT_DIR.mkdir(parents=True, exist_ok=True)

@@ -38,7 +38,7 @@ datalake.duckdb (268KB, view definitions only)
 
 ```python
 import duckdb
-conn = duckdb.connect('/mnt/nvme03/science_datalake/datalake.duckdb', read_only=True)
+conn = duckdb.connect('datalake.duckdb', read_only=True)
 conn.sql("SELECT title, citationcount FROM s2ag.papers WHERE doi = '10.1038/nature12373'").show()
 ```
 
@@ -149,7 +149,7 @@ python scripts/datalake_cli.py info --format=json --dataset=s2ag
 
 - Python 3.12+ with venv at `.venv/`
 - `pip install duckdb pyarrow` (see `requirements.txt`)
-- The NVME drive mounted at `/mnt/nvme03`
+- A local or external SSD with sufficient storage
 
 ## Licenses
 

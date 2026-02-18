@@ -3,7 +3,7 @@
 # Run this from the data lake root directory.
 #
 # Usage:
-#   cd /mnt/nvme03/science_datalake
+#   cd /path/to/science_datalake
 #   ./remount.sh
 
 set -e

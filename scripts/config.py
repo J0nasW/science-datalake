@@ -16,8 +16,6 @@ from pathlib import Path
 
 # Common mount points to try as fallback
 COMMON_MOUNT_POINTS = [
-    "/mnt/nvme03/science_datalake",
-    "/mnt/nvme04/science_datalake",
     "/mnt/data/science_datalake",
     "/data/science_datalake",
 ]

@@ -31,8 +31,8 @@ version: "1.0.0"
 date-released: "2026-02-17"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.TODO"
-    description: "Zenodo concept DOI (always resolves to latest version)"
+    value: "10.57967/hf/7850"
+    description: "HuggingFace dataset DOI"
 references:
   - type: dataset
     title: "OpenAlex"

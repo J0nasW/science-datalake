@@ -242,7 +242,7 @@ python scripts/materialize_unified_papers.py
   year={2026},
   publisher={HuggingFace},
   url={https://huggingface.co/datasets/J0nasW/science-datalake},
-  doi={10.5281/zenodo.TODO}
+  doi={10.57967/hf/7850}
 }
 ```
 

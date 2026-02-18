@@ -4,7 +4,7 @@
   "name": "Science Data Lake",
   "description": "A unified, portable science data lake integrating 8 complementary scholarly datasets (293M+ unique DOIs, ~960 GB Parquet) with cross-dataset DOI normalization, 13 scientific ontologies (1.3M terms), and a reproducible ETL pipeline. Enables full-lifecycle scholarly analysis from preprint to patent.",
   "url": "https://huggingface.co/datasets/J0nasW/science-datalake",
-  "identifier": "https://doi.org/10.5281/zenodo.TODO",
+  "identifier": "https://doi.org/10.57967/hf/7850",
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "creator": {
     "@type": "Person",

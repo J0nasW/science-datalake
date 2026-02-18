@@ -202,7 +202,7 @@ python scripts/materialize_unified_papers.py
 ```bibtex
 @dataset{wilinski2026sciencedatalake,
   title={Science Data Lake: A Unified, Portable Data Lake for Full-Lifecycle Scholarly Analysis},
-  author={Wilinski, Piotr},
+  author={Wilinski, Jonas},
   year={2026},
   publisher={HuggingFace},
   url={https://huggingface.co/datasets/J0nasW/science-datalake},

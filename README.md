@@ -17,6 +17,23 @@ Eight scholarly datasets and 13 scientific ontologies unified under a single Duc
 
 All data lives as Parquet files on disk (~960 GB). The `datalake.duckdb` file (~268KB) stores only view definitions pointing to those files. This makes it fully portable: mount the drive, regenerate views, query.
 
+## Snapshot Dates
+
+Each source was downloaded at a specific point in time. The data in this release reflects these snapshots:
+
+| Dataset | Snapshot / Release | Notes |
+|---------|-------------------|-------|
+| OpenAlex | 2026-02-03 | S3 snapshot `s3://openalex/data/` |
+| S2AG (Semantic Scholar) | 2025-12-05 | Datasets API bulk download |
+| SciSciNet v2 | 2024-11-01 | GCS bucket `gs://sciscinet-neo/v2` |
+| Papers With Code | 2025-07 | Archived JSON snapshot |
+| Retraction Watch | 2025-02 | Crossref-sourced CSV |
+| Reliance on Science | v64 | Zenodo record |
+| PreprintToPaper | 2025-06 | Zenodo record |
+| 13 Ontologies | 2026-02 | Downloaded from official sources |
+
+All snapshots can be refreshed using the update pipeline — see [Keeping the Data Lake Current](#keeping-the-data-lake-current) below.
+
 ## Architecture
 
 ```
@@ -110,30 +127,62 @@ Additional join keys:
 | `xref.topic_ontology_map` | 16.2K | OpenAlex topics → ontology terms via BGE-large-en-v1.5 embeddings (99.8% topic coverage) |
 | `xref.ontology_bridges` | 1.8K | Cross-ontology links via shared external IDs (UMLS, Wikidata, etc.) |
 
+## Keeping the Data Lake Current
+
+The pipeline is designed for repeated updates. When upstream sources release new snapshots, a single command re-downloads, re-converts, and regenerates views:
+
+```bash
+# Update a single dataset (download fresh snapshot + convert to Parquet + regenerate views)
+python scripts/datalake_cli.py update openalex
+
+# Update all datasets at once
+python scripts/datalake_cli.py update
+
+# Re-materialize the unified cross-reference table after any update
+python scripts/materialize_unified_papers.py
+```
+
+Each source has its own download + convert script that the CLI orchestrates. The pipeline is idempotent — re-running it replaces the old snapshot cleanly.
+
 ## Day-to-Day Operations
 
 ```bash
-# Check status
+# Check status: disk usage, row counts, snapshot dates
 python scripts/datalake_cli.py status
 
-# Update a dataset (download + convert + regenerate views)
-python scripts/datalake_cli.py update openalex
+# Run a query
+python scripts/datalake_cli.py query "SELECT COUNT(*) FROM sciscinet.papers WHERE disruption > 0.5"
 
-# Update all datasets
-python scripts/datalake_cli.py update
+# Interactive DuckDB shell
+python scripts/datalake_cli.py shell
 
 # Compact OpenAlex shards into single files per table
 python scripts/convert_openalex.py --compact
 
 # Regenerate views after mounting on a new machine
 python scripts/create_unified_db.py
-# or: ./remount.sh
-
-# Run a query
-python scripts/datalake_cli.py query "SELECT COUNT(*) FROM sciscinet.papers WHERE disruption > 0.5"
 
 # Export JSON metadata
 python scripts/datalake_cli.py info --format=json --dataset=s2ag
+```
+
+## LLM & AI Agent Integration
+
+This data lake is designed to be queryable by LLM-based coding agents (Claude Code, Cursor, Copilot, etc.). The key enabler is **[SCHEMA.md](SCHEMA.md)** — a single, structured reference file containing:
+
+- Every table and column with types, row counts, and descriptions
+- Cross-dataset join strategies with ready-to-use SQL examples
+- DOI format differences and normalization patterns
+- Performance tiers (S/M/L/VL) so agents know when to add WHERE/LIMIT
+- Common task recipes (find paper by DOI, get disruption + citations, etc.)
+
+**How to use it:** Point your AI coding assistant at `SCHEMA.md` (e.g., add it to context or reference it in your prompt). The agent can then write correct DuckDB SQL queries across all 8 datasets and 13 ontologies without prior knowledge of the schema.
+
+```
+# Example prompt for an AI agent:
+"Using the schema in SCHEMA.md, write a query that finds the top 20
+ most disruptive papers in computer science that have open-source code
+ on GitHub, including their retraction status."
 ```
 
 ## Documentation Map
@@ -141,7 +190,7 @@ python scripts/datalake_cli.py info --format=json --dataset=s2ag
 | File | Purpose | Audience |
 |------|---------|----------|
 | **README.md** | Overview and operations | Humans, new users |
-| **[SCHEMA.md](SCHEMA.md)** | Complete table/column reference | LLMs, agents, developers |
+| **[SCHEMA.md](SCHEMA.md)** | Complete table/column reference | **LLMs, AI agents**, developers |
 | **[CATALOG.md](CATALOG.md)** | Detailed queries, quirks, narrative docs | Researchers, analysts |
 | **datasets/*/meta.json** | Machine-readable metadata per dataset | Scripts, automation |
 

@@ -108,7 +108,7 @@ LIMIT 20
 | Dataset | Papers/Records | License | Key Contribution |
 |---------|---------------|---------|-----------------|
 | **OpenAlex** | 479M works | **CC0 1.0** (public domain) | Broadest coverage, topics, FWCI |
-| **SciSciNet** v2 | 159M papers | **CC BY 4.0** | Disruption index, atypicality, team size |
+| **SciSciNet** v2 | 250M papers | **CC BY 4.0** | Disruption index, atypicality, team size |
 | **Papers With Code** | 513K papers | **CC BY-SA 4.0** | Method-task-dataset-code links |
 | **Retraction Watch** | 69K records | **Open** (via Crossref) | Retraction flags + reasons |
 | **Preprint-to-Paper** | 146K pairs | **CC BY 4.0** | bioRxiv preprint to published paper |
@@ -125,6 +125,21 @@ LIMIT 20
 | UNESCO Thesaurus | CC BY-SA 3.0 IGO |
 | HPO | Custom (free for research use) |
 | MSC2020 | **CC BY-NC-SA 4.0** (non-commercial) |
+
+### Snapshot Dates
+
+Each source was downloaded at a specific point in time:
+
+| Dataset | Snapshot / Release | Notes |
+|---------|-------------------|-------|
+| OpenAlex | 2026-02-03 | S3 snapshot |
+| SciSciNet v2 | 2024-11-01 | GCS bucket |
+| Papers With Code | 2025-07 | Archived JSON |
+| Retraction Watch | 2025-02 | Crossref CSV |
+| Preprint-to-Paper | 2025-06 | Zenodo record |
+| 13 Ontologies | 2026-02 | Official sources |
+
+All snapshots can be refreshed using the [update pipeline](https://github.com/J0nasW/science-datalake) — see below.
 
 ### Not Included in This Upload
 
@@ -183,6 +198,27 @@ df = con.execute("""
     LIMIT 100
 """).df()
 ```
+
+## Keeping the Data Current
+
+The full pipeline supports incremental updates. When upstream sources release new snapshots:
+
+```bash
+# Update a single dataset
+python scripts/datalake_cli.py update openalex
+
+# Update all datasets and rebuild cross-reference tables
+python scripts/datalake_cli.py update
+python scripts/materialize_unified_papers.py
+```
+
+See the [GitHub repository](https://github.com/J0nasW/science-datalake) for full pipeline documentation.
+
+## LLM & AI Agent Integration
+
+This data lake ships with **[SCHEMA.md](https://github.com/J0nasW/science-datalake/blob/main/SCHEMA.md)** — a structured reference file optimized for LLM-based coding agents (Claude Code, Cursor, Copilot, etc.). It contains every table, column, type, join strategy, and performance tier in a format that AI agents can use to write correct DuckDB SQL without prior schema knowledge.
+
+Point your AI assistant at `SCHEMA.md` and ask it to query across all 6+ datasets and 13 ontologies using natural language.
 
 ## Building the Full Instance (All 8 Sources)
 

@@ -17,24 +17,24 @@ versions used in this release.}
 \toprule
 \textbf{Source} & \textbf{Records} & \textbf{License} & \textbf{Version} & \textbf{Key content} \\
 \midrule
-Semantic Scholar (S2AG)     & 133M  & ODC-BY   & 2024-09 & Citations, influential citations, open access \\
-OpenAlex                    & 292M  & CC0      & 2025-01 & FWCI, topics, types, languages \\
-SciSciNet                   & 159M  & CC BY    & v2      & Disruption, atypicality, team size \\
-Papers with Code            & 141K  & CC BY-SA & 2024-10 & Code repositories, tasks, datasets \\
-Retraction Watch            & 60K   & Open     & 2024-09 & Retraction reasons and dates \\
-Reliance on Science (RoS)   & 548K  & CC BY-NC & v64     & Patent--paper citation pairs \\
-Preprint-to-Published (P2P) & 4M    & Open     & 2024    & bioRxiv/medRxiv DOI to published DOI \\
+Semantic Scholar (S2AG)     & 231M  & ODC-BY   & 2024-09 & Citations, influential citations, open access \\
+OpenAlex                    & 479M  & CC0      & 2025-01 & FWCI, topics, types, languages \\
+SciSciNet                   & 250M  & CC BY    & v2      & Disruption, atypicality, team size \\
+Papers with Code            & 513K  & CC BY-SA & 2024-10 & Code repositories, tasks, datasets \\
+Retraction Watch            & 69K   & Open     & 2024-09 & Retraction reasons and dates \\
+Reliance on Science (RoS)   & 47.8M & CC BY-NC & v64     & Patent--paper citation pairs \\
+Preprint-to-Published (P2P) & 146K  & Open     & 2024    & bioRxiv/medRxiv DOI to published DOI \\
 Crossref                    & ---   & Open     & 2024    & DOI metadata, reference lists \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \textbf{Semantic Scholar Academic Graph (S2AG)}~\cite{kinney2023s2ag} provides
-bibliometric metadata for approximately 133~million papers, including citation counts,
+bibliometric metadata for approximately 231~million papers, including citation counts,
 influential citation counts (based on citation context analysis), and open-access
 status flags.
 
-\textbf{OpenAlex}~\cite{priem2022openalex} is an open catalogue of 292~million
+\textbf{OpenAlex}~\cite{priem2022openalex} is an open catalogue of 479~million
 scholarly works with field-weighted citation impact (FWCI), a four-level topic taxonomy
 (domain, field, subfield, topic with 4,516~leaf topics), document types, and language
 annotations.
@@ -43,18 +43,18 @@ annotations.
 pre-computed science-of-science metrics including the disruption index
 CD\textsubscript{5}~\cite{funk2017disruption,wu2019disruption}, journal atypicality
 $z$-scores~\cite{uzzi2013atypicality}, team size indicators, and patent citation
-counts for 159~million papers.
+counts for 250~million papers.
 
-\textbf{Papers with Code}~\cite{paperswithcode2024} links 141~thousand machine-learning
+\textbf{Papers with Code}~\cite{paperswithcode2024} links 513~thousand machine-learning
 papers to their associated code repositories, benchmark tasks, and datasets.
 
-\textbf{Retraction Watch}~\cite{retractionwatch2024} catalogues approximately 60~thousand
+\textbf{Retraction Watch}~\cite{retractionwatch2024} catalogues approximately 69~thousand
 retracted or corrected publications with structured retraction reasons and dates.
 
-\textbf{Reliance on Science (RoS)}~\cite{marx2020ros} maps 548~thousand patent
-front-page citations to the scientific papers they reference, with confidence scores.
+\textbf{Reliance on Science (RoS)}~\cite{marx2020ros} provides 47.8~million patent-to-paper citation pairs from global patent
+offices, with confidence scores and citation location metadata.
 
-\textbf{Preprint-to-Published (P2P)} provides approximately 4~million mappings from
+\textbf{Preprint-to-Published (P2P)} provides approximately 146~thousand mappings from
 bioRxiv and medRxiv preprint DOIs to their corresponding published-version DOIs.
 
 \textbf{Crossref} contributes DOI metadata and reference lists used for DOI
@@ -181,7 +181,7 @@ for the largest multi-source intersection.}
 \label{sec:ontology}
 
 OpenAlex assigns papers to a flat topic taxonomy of 4,516~topics organized into
-four hierarchical levels (252~subfields, 19~fields, 4~domains), but these topics
+four hierarchical levels (252~subfields, 26~fields, 4~domains), but these topics
 lack mappings to formal scientific ontologies that encode domain-specific
 knowledge. To bridge this gap, we developed an embedding-based alignment method
 that maps OpenAlex topics to 13~scientific ontologies comprising 1.3~million
@@ -190,7 +190,7 @@ terms in total.
 The 13~ontologies span diverse scientific domains: Medical Subject Headings
 (MeSH; 721K terms), Chemical Entities of Biological Interest (ChEBI; 205K),
 NCI Thesaurus (NCIT; 204K), Gene Ontology (GO; 48K), AGROVOC (42K), Computer
-Science Ontology (CSO; 26K)~\cite{salatino2020cso}, Disease Ontology (DOID),
+Science Ontology (CSO; 15K)~\cite{salatino2020cso}, Disease Ontology (DOID),
 Human Phenotype Ontology (HPO), EDAM bioinformatics ontology, UNESCO Thesaurus,
 Standard Thesaurus for Economics (STW), Physics Subject Headings (PhySH), and
 the Mathematics Subject Classification (MSC2020). Each ontology was converted

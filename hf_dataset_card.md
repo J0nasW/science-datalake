@@ -169,7 +169,7 @@ con.execute("INSTALL httpfs; LOAD httpfs;")
 
 df = con.execute("""
     SELECT doi, title, year, sciscinet_disruption, oa_cited_by_count
-    FROM 'hf://datasets/USERNAME/science-datalake/xref/unified_papers/*.parquet'
+    FROM 'hf://datasets/J0nasW/science-datalake/xref/unified_papers/*.parquet'
     WHERE sciscinet_disruption IS NOT NULL
     ORDER BY sciscinet_disruption DESC
     LIMIT 100
@@ -181,7 +181,7 @@ df = con.execute("""
 Clone the GitHub repository and run the pipeline:
 
 ```bash
-git clone https://github.com/TODO/science-datalake
+git clone https://github.com/J0nasW/science-datalake
 cd science-datalake
 python scripts/datalake_cli.py download --all
 python scripts/datalake_cli.py convert --all
@@ -197,7 +197,7 @@ python scripts/materialize_unified_papers.py
   author={Wilinski, Jonas},
   year={2026},
   publisher={HuggingFace},
-  url={https://huggingface.co/datasets/TODO/science-datalake},
+  url={https://huggingface.co/datasets/J0nasW/science-datalake},
   doi={10.5281/zenodo.TODO}
 }
 ```

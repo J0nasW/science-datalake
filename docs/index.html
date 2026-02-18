@@ -9,14 +9,14 @@
         "@context": "https://schema.org/",
         "@type": "Dataset",
         "name": "Science Data Lake",
-        "description": "A unified, portable science data lake integrating 8 complementary scholarly datasets (293M+ unique DOIs, ~1.6TB Parquet) with cross-dataset DOI normalization, 13 scientific ontologies (1.3M terms), and a reproducible ETL pipeline.",
-        "url": "https://huggingface.co/datasets/TODO/science-datalake",
+        "description": "A unified, portable science data lake integrating 8 complementary scholarly datasets (293M+ unique DOIs, ~960 GB Parquet) with cross-dataset DOI normalization, 13 scientific ontologies (1.3M terms), and a reproducible ETL pipeline.",
+        "url": "https://huggingface.co/datasets/J0nasW/science-datalake",
         "identifier": "https://doi.org/10.5281/zenodo.TODO",
         "license": "https://creativecommons.org/licenses/by/4.0/",
         "creator": {"@type": "Person", "name": "Piotr Wilinski"},
         "datePublished": "2026-02-17",
         "keywords": ["scholarly data", "bibliometrics", "science of science", "citation analysis", "DuckDB", "Parquet"],
-        "distribution": [{"@type": "DataDownload", "encodingFormat": "application/x-parquet", "contentUrl": "https://huggingface.co/datasets/TODO/science-datalake"}]
+        "distribution": [{"@type": "DataDownload", "encodingFormat": "application/x-parquet", "contentUrl": "https://huggingface.co/datasets/J0nasW/science-datalake"}]
     }
     </script>
     <style>
@@ -62,9 +62,9 @@
 
     <h2>Access</h2>
     <ul>
-        <li><a href="https://huggingface.co/datasets/TODO/science-datalake">HuggingFace Dataset</a> — Browse, query via SQL Console, or download</li>
-        <li><a href="https://huggingface.co/spaces/TODO/science-datalake-explorer">Interactive Demo</a> — Run SQL queries in your browser</li>
-        <li><a href="https://github.com/TODO/science-datalake">GitHub Repository</a> — Full ETL pipeline to build your own instance</li>
+        <li><a href="https://huggingface.co/datasets/J0nasW/science-datalake">HuggingFace Dataset</a> — Browse, query via SQL Console, or download</li>
+        <li><a href="https://huggingface.co/spaces/J0nasW/science-datalake-explorer">Interactive Demo</a> — Run SQL queries in your browser</li>
+        <li><a href="https://github.com/J0nasW/science-datalake">GitHub Repository</a> — Full ETL pipeline to build your own instance</li>
         <li><a href="https://doi.org/10.5281/zenodo.TODO">Zenodo DOI</a> — Citable frozen snapshot</li>
     </ul>
 
@@ -75,7 +75,7 @@ con.execute("INSTALL httpfs; LOAD httpfs;")
 
 df = con.execute("""
     SELECT doi, title, year, sciscinet_disruption, oa_cited_by_count
-    FROM 'hf://datasets/TODO/science-datalake/xref/unified_papers/*.parquet'
+    FROM 'hf://datasets/J0nasW/science-datalake/xref/unified_papers/*.parquet'
     WHERE sciscinet_disruption IS NOT NULL
     ORDER BY sciscinet_disruption DESC
     LIMIT 100
@@ -87,7 +87,7 @@ df = con.execute("""
   author={Wilinski, Piotr},
   year={2026},
   publisher={HuggingFace},
-  url={https://huggingface.co/datasets/TODO/science-datalake}
+  url={https://huggingface.co/datasets/J0nasW/science-datalake}
 }</code></pre>
 </body>
 </html>

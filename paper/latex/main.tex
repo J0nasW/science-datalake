@@ -1,0 +1,99 @@
+\documentclass[11pt,a4paper]{article}
+
+% === Packages ===
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{textcomp}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{multirow}
+% \usepackage{adjustbox}  % not available; not needed
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{microtype}
+
+% === TikZ libraries ===
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,calc,backgrounds}
+
+% === Colors ===
+\definecolor{sourceblue}{HTML}{4472C4}
+\definecolor{sourcegreen}{HTML}{548235}
+\definecolor{parquetgray}{HTML}{7F7F7F}
+\definecolor{duckdbyellow}{HTML}{FFC000}
+\definecolor{xreforange}{HTML}{ED7D31}
+\definecolor{ontopurple}{HTML}{7030A0}
+
+% === Hyperref setup ===
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  citecolor=blue!70!black,
+  urlcolor=blue!70!black,
+}
+
+% === Title ===
+\title{The Science Data Lake: A Unified Open Infrastructure\\ Integrating 293~Million Papers Across Eight Scholarly\\ Sources with Embedding-Based Ontology Alignment}
+
+\author{
+  Author Names\\
+  \textit{Affiliations}\\
+  \texttt{email@institution.edu}
+}
+
+\date{February 2026}
+
+% ============================================================
+\begin{document}
+
+\maketitle
+
+% --- Abstract ---
+\input{abstract}
+
+% --- Background & Summary ---
+\input{background}
+
+% --- Methods ---
+\input{methods}
+
+% --- Data Records ---
+\input{data_records}
+
+% --- Technical Validation ---
+\input{technical_validation}
+
+% --- Usage Notes ---
+\input{usage_notes}
+
+% --- Code Availability ---
+\input{code_availability}
+
+% --- Acknowledgements ---
+\section*{Acknowledgements}
+% TODO: Fill in acknowledgements (funding agencies, compute resources, etc.)
+\textbf{[To be completed before submission.]}
+
+% --- Author Contributions ---
+\section*{Author Contributions}
+% TODO: Fill in using CRediT taxonomy (Conceptualization, Methodology, Software, etc.)
+\textbf{[To be completed before submission.]}
+
+% --- Competing Interests ---
+\section*{Competing Interests}
+The authors declare no competing interests.
+
+% --- References ---
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science Data Lake</title>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org/",
+        "@type": "Dataset",
+        "name": "Science Data Lake",
+        "description": "A unified, portable science data lake integrating 8 complementary scholarly datasets (293M+ unique DOIs, ~1.6TB Parquet) with cross-dataset DOI normalization, 13 scientific ontologies (1.3M terms), and a reproducible ETL pipeline.",
+        "url": "https://huggingface.co/datasets/TODO/science-datalake",
+        "identifier": "https://doi.org/10.5281/zenodo.TODO",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "creator": {"@type": "Person", "name": "Piotr Wilinski"},
+        "datePublished": "2026-02-17",
+        "keywords": ["scholarly data", "bibliometrics", "science of science", "citation analysis", "DuckDB", "Parquet"],
+        "distribution": [{"@type": "DataDownload", "encodingFormat": "application/x-parquet", "contentUrl": "https://huggingface.co/datasets/TODO/science-datalake"}]
+    }
+    </script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #333; line-height: 1.6; }
+        h1 { color: #1a1a1a; border-bottom: 2px solid #0066cc; padding-bottom: 0.5rem; }
+        h2 { color: #0066cc; margin-top: 2rem; }
+        code { background: #f4f4f4; padding: 0.2em 0.4em; border-radius: 3px; font-size: 0.9em; }
+        pre { background: #f4f4f4; padding: 1rem; border-radius: 5px; overflow-x: auto; }
+        table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+        th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
+        th { background: #f0f0f0; }
+        .badge { display: inline-block; padding: 0.25em 0.6em; font-size: 0.85em; background: #0066cc; color: white; border-radius: 3px; margin: 0.1em; }
+        a { color: #0066cc; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
+        .stat-card { background: #f8f9fa; padding: 1rem; border-radius: 8px; text-align: center; }
+        .stat-card .number { font-size: 1.8em; font-weight: bold; color: #0066cc; }
+    </style>
+</head>
+<body>
+    <h1>Science Data Lake</h1>
+    <p>A unified, portable science data lake for full-lifecycle scholarly analysis — from preprint to patent.</p>
+
+    <div class="stats">
+        <div class="stat-card"><div class="number">293M</div>Unique DOIs</div>
+        <div class="stat-card"><div class="number">8</div>Data Sources</div>
+        <div class="stat-card"><div class="number">13</div>Ontologies</div>
+        <div class="stat-card"><div class="number">1.3M</div>Ontology Terms</div>
+        <div class="stat-card"><div class="number">16K</div>Topic&harr;Ontology Links</div>
+    </div>
+
+    <h2>Integrated Datasets</h2>
+    <table>
+        <tr><th>Dataset</th><th>Records</th><th>Key Contribution</th></tr>
+        <tr><td>OpenAlex</td><td>479M works</td><td>Broadest coverage, topics, FWCI</td></tr>
+        <tr><td>S2AG (Semantic Scholar)</td><td>231M papers</td><td>Citation context/intent, TLDRs</td></tr>
+        <tr><td>SciSciNet</td><td>159M papers</td><td>Disruption index, atypicality</td></tr>
+        <tr><td>Papers With Code</td><td>513K papers</td><td>Method-task-dataset-code links</td></tr>
+        <tr><td>Retraction Watch</td><td>69K records</td><td>Retraction flags + reasons</td></tr>
+        <tr><td>Reliance on Science</td><td>548K pairs</td><td>Patent-paper citation links</td></tr>
+        <tr><td>Preprint-to-Paper</td><td>146K pairs</td><td>Preprint &harr; published paper mapping</td></tr>
+        <tr><td>13 Ontologies</td><td>1.3M terms</td><td>CSO, MeSH, GO, DOID, ChEBI, and 8 more</td></tr>
+    </table>
+
+    <h2>Access</h2>
+    <ul>
+        <li><a href="https://huggingface.co/datasets/TODO/science-datalake">HuggingFace Dataset</a> — Browse, query via SQL Console, or download</li>
+        <li><a href="https://huggingface.co/spaces/TODO/science-datalake-explorer">Interactive Demo</a> — Run SQL queries in your browser</li>
+        <li><a href="https://github.com/TODO/science-datalake">GitHub Repository</a> — Full ETL pipeline to build your own instance</li>
+        <li><a href="https://doi.org/10.5281/zenodo.TODO">Zenodo DOI</a> — Citable frozen snapshot</li>
+    </ul>
+
+    <h2>Quick Start</h2>
+    <pre><code>import duckdb
+con = duckdb.connect()
+con.execute("INSTALL httpfs; LOAD httpfs;")
+
+df = con.execute("""
+    SELECT doi, title, year, sciscinet_disruption, oa_cited_by_count
+    FROM 'hf://datasets/TODO/science-datalake/xref/unified_papers/*.parquet'
+    WHERE sciscinet_disruption IS NOT NULL
+    ORDER BY sciscinet_disruption DESC
+    LIMIT 100
+""").df()</code></pre>
+
+    <h2>Citation</h2>
+    <pre><code>@dataset{wilinski2026sciencedatalake,
+  title={Science Data Lake: A Unified, Portable Data Lake for Full-Lifecycle Scholarly Analysis},
+  author={Wilinski, Piotr},
+  year={2026},
+  publisher={HuggingFace},
+  url={https://huggingface.co/datasets/TODO/science-datalake}
+}</code></pre>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# Optional GPU/ML dependencies for embedding-based ontology alignment
+# Install with: pip install -r requirements_ml.txt
+#
+# Requires CUDA-capable GPU (tested on NVIDIA RTX A4500, 20GB VRAM)
+# CPU-only usage: replace torch with CPU-only wheel from https://pytorch.org
+
+torch>=2.0.0
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.0
+umap-learn>=0.5.0
+matplotlib>=3.7.0

@@ -1,0 +1,263 @@
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Data Sources}
+\label{sec:sources}
+
+The Science Data Lake integrates eight open scholarly data sources, each contributing
+distinct metadata facets (Table~\ref{tab:sources}).
+
+\begin{table}[t]
+\centering
+\caption{Overview of integrated data sources. Record counts reflect the snapshot
+versions used in this release.}
+\label{tab:sources}
+\small
+\begin{tabularx}{\textwidth}{@{}l r l l X@{}}
+\toprule
+\textbf{Source} & \textbf{Records} & \textbf{License} & \textbf{Version} & \textbf{Key content} \\
+\midrule
+Semantic Scholar (S2AG)     & 133M  & ODC-BY   & 2024-09 & Citations, influential citations, open access \\
+OpenAlex                    & 292M  & CC0      & 2025-01 & FWCI, topics, types, languages \\
+SciSciNet                   & 159M  & CC BY    & v2      & Disruption, atypicality, team size \\
+Papers with Code            & 141K  & CC BY-SA & 2024-10 & Code repositories, tasks, datasets \\
+Retraction Watch            & 60K   & Open     & 2024-09 & Retraction reasons and dates \\
+Reliance on Science (RoS)   & 548K  & CC BY-NC & v64     & Patent--paper citation pairs \\
+Preprint-to-Published (P2P) & 4M    & Open     & 2024    & bioRxiv/medRxiv DOI to published DOI \\
+Crossref                    & ---   & Open     & 2024    & DOI metadata, reference lists \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Semantic Scholar Academic Graph (S2AG)}~\cite{kinney2023s2ag} provides
+bibliometric metadata for approximately 133~million papers, including citation counts,
+influential citation counts (based on citation context analysis), and open-access
+status flags.
+
+\textbf{OpenAlex}~\cite{priem2022openalex} is an open catalogue of 292~million
+scholarly works with field-weighted citation impact (FWCI), a four-level topic taxonomy
+(domain, field, subfield, topic with 4,516~leaf topics), document types, and language
+annotations.
+
+\textbf{SciSciNet}~\cite{lin2023sciscinet} augments OpenAlex records with
+pre-computed science-of-science metrics including the disruption index
+CD\textsubscript{5}~\cite{funk2017disruption,wu2019disruption}, journal atypicality
+$z$-scores~\cite{uzzi2013atypicality}, team size indicators, and patent citation
+counts for 159~million papers.
+
+\textbf{Papers with Code}~\cite{paperswithcode2024} links 141~thousand machine-learning
+papers to their associated code repositories, benchmark tasks, and datasets.
+
+\textbf{Retraction Watch}~\cite{retractionwatch2024} catalogues approximately 60~thousand
+retracted or corrected publications with structured retraction reasons and dates.
+
+\textbf{Reliance on Science (RoS)}~\cite{marx2020ros} maps 548~thousand patent
+front-page citations to the scientific papers they reference, with confidence scores.
+
+\textbf{Preprint-to-Published (P2P)} provides approximately 4~million mappings from
+bioRxiv and medRxiv preprint DOIs to their corresponding published-version DOIs.
+
+\textbf{Crossref} contributes DOI metadata and reference lists used for DOI
+validation and supplementary linkage.
+
+Figure~\ref{fig:temporal} shows the temporal coverage of each source, revealing
+structural differences: OpenAlex extends back several centuries, S2AG is concentrated
+in recent decades with a computer-science emphasis, and SciSciNet metrics end around
+2022.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig3_temporal_ridgeline.pdf}
+\caption{Temporal coverage by source. Publication-year distributions reveal
+structural differences in scope and recency across the eight integrated sources.}
+\label{fig:temporal}
+\end{figure}
+
+% ============================================================
+\subsection{Architecture}
+\label{sec:architecture}
+
+The Science Data Lake is built on a \emph{views-over-Parquet} architecture using
+DuckDB~\cite{raasveldt2019duckdb} (Figure~\ref{fig:architecture}). Each data source
+is first converted from its native format (JSON Lines, CSV, N-Triples) into columnar
+Apache Parquet files, totaling approximately 960\,GB on disk. A lightweight DuckDB
+database ({\raise.17ex\hbox{$\scriptstyle\sim$}}500\,KB) defines 151~SQL views
+organized into 22~schemas that reference these Parquet files without copying data.
+
+The schema design follows two principles. \textbf{Source-level preservation}: each
+data source retains its native schema within a dedicated namespace (e.g.,
+\texttt{s2ag.papers}, \texttt{openalex.works}, \texttt{sciscinet.paper\_metrics}),
+enabling direct inspection of how different databases represent the same paper.
+\textbf{Cross-referencing via the \texttt{xref} schema}: three materialized views
+bridge across sources---\texttt{doi\_map} (DOI normalization), \texttt{unified\_papers}
+(293M-row join table), and \texttt{topic\_ontology\_map} (ontology alignment).
+
+The system supports dual-mode access: local deployment on an NVME drive for
+full-speed analytical queries, or remote access through HuggingFace-hosted Parquet
+files for users without local storage.
+
+A reproducible pipeline orchestrated by a master CLI script (\texttt{datalake\_cli.py})
+automates the full workflow: downloading source snapshots, converting to Parquet,
+creating DuckDB views, materializing cross-reference tables, and building the ontology
+linkage.
+
+\input{architecture}
+
+% ============================================================
+\subsection{DOI Normalization and Record Linkage}
+\label{sec:doi}
+
+Digital Object Identifiers (DOIs) serve as the primary key for cross-source record
+linkage, but sources store them in incompatible formats (Table~\ref{tab:doi}).
+
+\begin{table}[t]
+\centering
+\caption{DOI format differences across data sources and the normalization applied.}
+\label{tab:doi}
+\small
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Source} & \textbf{Raw DOI format} & \textbf{Normalization} \\
+\midrule
+S2AG             & lowercase, no prefix (\texttt{10.1038/\ldots}) & Canonical (none) \\
+OpenAlex         & lowercase, \texttt{https://doi.org/} prefix    & Strip prefix \\
+SciSciNet        & lowercase, \texttt{https://doi.org/} prefix    & Strip prefix \\
+Papers with Code & lowercase, no prefix                           & None \\
+Retraction Watch & lowercase, no prefix                           & None \\
+Crossref         & mixed case                                     & Lowercase \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All DOIs are normalized to a canonical lowercase, prefix-free format. The
+\texttt{xref.doi\_map} view implements this normalization as a union of
+source-specific sub-queries, each applying the appropriate transformation.
+
+The resulting \texttt{xref.unified\_papers} table contains 293,123,121 unique DOIs
+with 29~columns drawn from all sources, including six Boolean coverage flags
+indicating which sources contain each paper. Table~\ref{tab:overlap} summarizes the
+pairwise coverage.
+
+\begin{table}[t]
+\centering
+\caption{Cross-source coverage of the 293M unified papers. Each cell shows the
+percentage of papers present in the column source that are also present in the
+row source.}
+\label{tab:overlap}
+\small
+\begin{tabular}{@{}l r r r r r r@{}}
+\toprule
+ & \textbf{OpenAlex} & \textbf{SciSciNet} & \textbf{S2AG} & \textbf{PWC} & \textbf{RetWatch} & \textbf{RoS} \\
+\midrule
+Coverage (\%) & 99.67 & 54.08 & 45.52 & 0.048 & 0.020 & 0.19 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+OpenAlex provides the broadest coverage at 99.67\% of all DOIs, consistent with
+its role as a comprehensive open index. SciSciNet and S2AG cover approximately
+half the DOI space, reflecting their focus on papers with sufficient citation
+data for metric computation. The specialized sources (Papers with Code, Retraction
+Watch, Reliance on Science) contribute smaller but unique record sets that cannot
+be obtained from the three large databases.
+
+Figure~\ref{fig:upset} shows the UpSet plot of the six-source overlap, revealing
+34~observed source combinations. The dominant combination is OpenAlex-only
+(45.0\%), followed by the three-way overlap of OpenAlex, SciSciNet, and S2AG
+(38.2\%).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig2_upset_source_overlap.pdf}
+\caption{UpSet plot showing the intersection structure across six data sources.
+Bars represent the number of papers in each source combination. Of 34~observed
+combinations, the three-way overlap of OpenAlex, SciSciNet, and S2AG accounts
+for the largest multi-source intersection.}
+\label{fig:upset}
+\end{figure}
+
+% ============================================================
+\subsection{Embedding-Based Ontology Alignment}
+\label{sec:ontology}
+
+OpenAlex assigns papers to a flat topic taxonomy of 4,516~topics organized into
+four hierarchical levels (252~subfields, 19~fields, 4~domains), but these topics
+lack mappings to formal scientific ontologies that encode domain-specific
+knowledge. To bridge this gap, we developed an embedding-based alignment method
+that maps OpenAlex topics to 13~scientific ontologies comprising 1.3~million
+terms in total.
+
+The 13~ontologies span diverse scientific domains: Medical Subject Headings
+(MeSH; 721K terms), Chemical Entities of Biological Interest (ChEBI; 205K),
+NCI Thesaurus (NCIT; 204K), Gene Ontology (GO; 48K), AGROVOC (42K), Computer
+Science Ontology (CSO; 26K)~\cite{salatino2020cso}, Disease Ontology (DOID),
+Human Phenotype Ontology (HPO), EDAM bioinformatics ontology, UNESCO Thesaurus,
+Standard Thesaurus for Economics (STW), Physics Subject Headings (PhySH), and
+the Mathematics Subject Classification (MSC2020). Each ontology was converted
+from its native format (OBO, SKOS/RDF, N-Triples, CSV) to a uniform Parquet
+representation using format-specific parsers, and simultaneously loaded into an
+Oxigraph RDF triple store for SPARQL queries.
+
+We employed a hybrid alignment strategy. For the 10~smaller ontologies (291K
+terms including synonyms), we computed dense embeddings using the BGE-large-en-v1.5
+model~\cite{xiao2024bge} (335M parameters, 1024 dimensions) and performed
+nearest-neighbour search via a FAISS index~\cite{johnson2021faiss} on an NVIDIA
+RTX A4500 GPU. For the three largest ontologies (MeSH, ChEBI, NCIT), which
+together account for 1.1M terms and would dominate the embedding space, we used
+exact string matching to ensure precision.
+
+Table~\ref{tab:ontology_tiers} summarizes the alignment quality. At a cosine
+similarity threshold of $\geq 0.85$, the method produces 2,527~mappings; relaxing
+to $\geq 0.65$ yields 16,150~mappings covering 4,509 of 4,516 topics (99.84\%).
+
+\begin{table}[t]
+\centering
+\caption{Ontology alignment quality tiers. Each tier includes all mappings at or
+above the similarity threshold.}
+\label{tab:ontology_tiers}
+\small
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+\textbf{Quality tier} & \textbf{Similarity} & \textbf{Mappings} & \textbf{Topics covered} \\
+\midrule
+Exact match   & $\geq 0.95$ &     85 & 71 (1.6\%) \\
+High quality  & $\geq 0.85$ &  2,527 & 1,647 (36.5\%) \\
+All           & $\geq 0.65$ & 16,150 & 4,509 (99.84\%) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+To contextualize the embedding approach, we compared it against a string-matching
+baseline using Jaro--Winkler similarity at a threshold of 0.90, which produced only
+937~matches---a 17-fold reduction relative to the embedding method. The embedding
+approach captures semantic similarity that string matching cannot: for example,
+the OpenAlex topic ``Artificial Intelligence in Medicine'' maps to EDAM's
+``Medical informatics'' (cosine similarity 0.87) and NCIT's ``Biomedical
+Informatics'' (0.85), neither of which would be found by string comparison.
+
+Figure~\ref{fig:umap} visualizes the joint embedding space using
+UMAP~\cite{mcinnes2018umap}, showing how OpenAlex topics cluster by domain and
+align with terms from domain-specific ontologies. Figure~\ref{fig:heatmap}
+displays the ontology-by-domain reach heatmap, confirming that different
+ontologies specialize in different scientific areas: MeSH dominates health
+sciences, CSO covers computer science, GO spans molecular biology, and AGROVOC
+bridges agricultural and environmental sciences.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig4_umap_embedding_space.pdf}
+\caption{UMAP projection of BGE-large embeddings for OpenAlex topics (points)
+and matched ontology terms (crosses), colored by OpenAlex domain. Semantic
+clusters emerge naturally, with domain-specific ontology terms co-locating with
+their corresponding topics.}
+\label{fig:umap}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig5_ontology_reach_heatmap.pdf}
+\caption{Ontology reach heatmap showing the number of high-quality mappings
+($\text{similarity} \geq 0.85$) between each ontology and each OpenAlex domain.
+The multi-ontology design ensures coverage across all scientific areas.}
+\label{fig:heatmap}
+\end{figure}

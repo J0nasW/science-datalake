@@ -1,0 +1,84 @@
+{
+  "@context": "https://schema.org/",
+  "@type": "Dataset",
+  "name": "Science Data Lake",
+  "description": "A unified, portable science data lake integrating 8 complementary scholarly datasets (293M+ unique DOIs, ~960 GB Parquet) with cross-dataset DOI normalization, 13 scientific ontologies (1.3M terms), and a reproducible ETL pipeline. Enables full-lifecycle scholarly analysis from preprint to patent.",
+  "url": "https://huggingface.co/datasets/TODO/science-datalake",
+  "identifier": "https://doi.org/10.5281/zenodo.TODO",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "creator": {
+    "@type": "Person",
+    "name": "Piotr Wilinski"
+  },
+  "datePublished": "2026-02-17",
+  "dateModified": "2026-02-17",
+  "version": "1.0.0",
+  "keywords": [
+    "scholarly data",
+    "bibliometrics",
+    "science of science",
+    "citation analysis",
+    "OpenAlex",
+    "Semantic Scholar",
+    "SciSciNet",
+    "Papers With Code",
+    "Retraction Watch",
+    "scientific ontologies",
+    "DuckDB",
+    "Parquet"
+  ],
+  "measurementTechnique": "DOI-based identity resolution across 8 scholarly data sources; embedding-based ontology alignment (BGE-large-en-v1.5) mapping 4,516 OpenAlex topics to 13 domain ontologies",
+  "variableMeasured": [
+    "citation count",
+    "disruption index",
+    "atypicality",
+    "field-weighted citation impact",
+    "retraction status",
+    "patent citation status"
+  ],
+  "includedInDataCatalog": {
+    "@type": "DataCatalog",
+    "name": "HuggingFace Datasets"
+  },
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "application/x-parquet",
+      "contentUrl": "https://huggingface.co/datasets/TODO/science-datalake"
+    }
+  ],
+  "isBasedOn": [
+    {
+      "@type": "Dataset",
+      "name": "OpenAlex",
+      "url": "https://openalex.org",
+      "license": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Semantic Scholar Academic Graph (S2AG)",
+      "url": "https://www.semanticscholar.org/product/api",
+      "license": "https://opendatacommons.org/licenses/by/1-0/"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SciSciNet",
+      "url": "https://www.nature.com/articles/s41597-023-02198-9"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Papers With Code",
+      "url": "https://paperswithcode.com"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Retraction Watch Database",
+      "url": "https://retractionwatch.com/retraction-watch-database-user-guide/"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Reliance on Science",
+      "url": "https://zenodo.org/records/7636401"
+    }
+  ]
+}

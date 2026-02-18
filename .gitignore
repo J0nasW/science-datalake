@@ -1,0 +1,50 @@
+# Data directories (hosted on HuggingFace, not in git)
+datasets/
+parquet_export/
+ontologies/
+ontologies.oxigraph/
+/figures/
+
+# DuckDB databases
+*.duckdb
+*.duckdb.wal
+
+# Parquet files
+*.parquet
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+
+# LaTeX build artifacts
+paper/latex/*.aux
+paper/latex/*.bbl
+paper/latex/*.blg
+paper/latex/*.log
+paper/latex/*.out
+paper/latex/*.synctex.gz
+paper/latex/*.fls
+paper/latex/*.fdb_latexmk
+texput.log
+
+# Temp files
+.tmp/
+*.tmp
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Embedding caches (large binary files)
+datasets/xref/topic_ontology_embeddings/

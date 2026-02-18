@@ -1,0 +1,119 @@
+\section{Usage Notes}
+\label{sec:usage}
+
+\subsection{Setup}
+
+The Science Data Lake can be deployed by cloning the repository, running the
+pipeline via \texttt{datalake\_cli.py} (which downloads, converts, and links
+all sources), and connecting to the resulting DuckDB database. For users
+without local storage, HuggingFace-hosted Parquet files can be queried
+directly through DuckDB's \texttt{httpfs} extension. All queries below use
+standard SQL and execute within DuckDB.
+
+\subsection{Vignette 1: Disruption, Code Adoption, and Ontology Landscape}
+
+This vignette examines whether papers that release code exhibit different
+disruption profiles than those that do not, and maps this pattern across
+ontology-defined domains.
+
+Joining \texttt{sciscinet.paper\_metrics} (disruption index
+CD\textsubscript{5}), \texttt{xref.unified\_papers} (code-availability flag
+from Papers with Code), and \texttt{xref.topic\_ontology\_map} (ontology
+bridging), we identified 139,873 papers with associated code repositories
+(0.048\% of the unified table). Papers with code showed a mean
+CD\textsubscript{5} of $-0.0005$, compared with $+0.0026$ for papers
+without code, suggesting that code-releasing papers tend to be slightly more
+consolidating (building on existing work) rather than disruptive. Ontology
+mapping reveals that this pattern varies across domains: computer science
+topics (mapped via CSO) show the strongest code adoption, while biomedical
+topics (mapped via GO and MeSH) show lower code rates but higher disruption
+variability.
+
+This analysis is \emph{only possible} because it requires simultaneous access
+to disruption scores (SciSciNet), code flags (Papers with Code), topic
+assignments (OpenAlex), and ontology bridging (our linkage)---four resources
+that exist in no single database.
+
+\subsection{Vignette 2: Retraction Profiles and Ontology Enrichment}
+
+This vignette characterizes retracted papers by their pre-retraction impact
+metrics and identifies ontology domains with anomalous retraction rates.
+
+\begin{sloppypar}
+Joining \texttt{retwatch.retracted\_papers}, \texttt{sciscinet.paper\_metrics},
+and \texttt{xref.unified\_papers}, we obtained 58,775 retracted papers with
+associated SciSciNet metrics. Retracted papers show a mean disruption of
+$0.0035$ compared with $0.0026$ for non-retracted papers, and the most-cited
+retracted paper accumulated 8,062 citations before retraction. Ontology-level
+enrichment analysis reveals retraction hotspots: topics mapped to ``AI
+Applications'' show 394$\times$ enrichment, and ``Advanced Technology''
+topics show 338$\times$ enrichment relative to baseline retraction rates.
+\end{sloppypar}
+
+This analysis requires retraction flags (Retraction Watch), disruption
+scores (SciSciNet), citation counts (OpenAlex), and ontology mapping---a
+combination unavailable in any single source.
+
+\subsection{Vignette 3: Patent Impact and Multi-Ontology Footprint}
+
+This vignette quantifies the citation and impact characteristics of papers
+cited by patents, broken down by ontology domain.
+
+Joining \texttt{ros.patent\_paper\_pairs}, \texttt{xref.unified\_papers},
+and \texttt{xref.topic\_ontology\_map}, we identified 312,929 patent-cited
+papers (0.107\% of the unified table). These papers have dramatically
+higher impact: mean citation count of 94.3 versus 16.1 for non-patent-cited
+papers (5.8$\times$), and mean FWCI of 4.7 versus 1.5 (3.1$\times$). The
+multi-ontology footprint reveals that patent-cited papers cluster in applied
+domains: MeSH-mapped health science topics, CSO-mapped computer science
+topics, and ChEBI-mapped chemistry topics dominate.
+
+The temporal coverage caveat applies: RoS patent citations are strongest
+through late 2023 due to patent processing lag, so very recent papers may
+have incomplete patent linkage.
+
+\subsection{Vignette 4: Cross-Source Citation Reliability}
+
+This vignette demonstrates record-level citation comparison across three
+independent databases.
+
+Restricting to the 121~million papers present in all three large sources
+(S2AG, OpenAlex, SciSciNet), we computed pairwise citation correlations:
+S2AG--OpenAlex $r = 0.76$, S2AG--SciSciNet $r = 0.87$, and OpenAlex--SciSciNet
+$r = 0.86$. The mean absolute differences range from 2.3 to 4.1~citations.
+Relative disagreement is most pronounced for low-cited papers (mean relative
+difference $\sim$20\% for papers with $<$10 citations) and diminishes for
+high-cited papers. The most extreme outlier---a paper with 257,887 citations
+in S2AG and zero in OpenAlex---illustrates how coverage and methodology
+differences can produce dramatic record-level discrepancies.
+
+This three-way comparison is \emph{only possible} when parallel citation
+counts from independent sources coexist in a single queryable table. No
+pairwise API-based comparison can reproduce this analysis at scale.
+
+Figure~\ref{fig:vignettes} summarizes the results of all four vignettes.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig6_vignette_composite.pdf}
+\caption{Composite vignette results (2$\times$2 panels). Top-left: disruption
+distributions for papers with versus without code (Vignette~1). Top-right:
+retraction enrichment by ontology domain (Vignette~2). Bottom-left: citation
+distributions for patent-cited versus non-patent-cited papers (Vignette~3).
+Bottom-right: pairwise citation agreement across three sources (Vignette~4).}
+\label{fig:vignettes}
+\end{figure}
+
+\subsection{Limitations and Extensibility}
+
+The Science Data Lake inherits the limitations of its constituent sources.
+Temporal coverage varies: SciSciNet metrics end around 2022, RoS exhibits
+patent processing lag, and OpenAlex snapshot dates may trail real-time data by
+weeks to months. Papers without DOIs (estimated at 5--15\% depending on field
+and era) are excluded from cross-source linkage. The ontology mapping relies
+on the current OpenAlex topic taxonomy, which may evolve across snapshots.
+
+The architecture is designed for extensibility: adding a new data source
+requires writing a Parquet converter and registering the schema in the
+pipeline configuration. Community contributions of additional sources,
+ontologies, or cross-reference methods are encouraged.

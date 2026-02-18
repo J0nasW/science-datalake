@@ -1,0 +1,100 @@
+\section{Technical Validation}
+\label{sec:validation}
+
+We validated the Science Data Lake through 10~automated sanity checks
+(Table~\ref{tab:sanity}), cross-source citation correlation analysis, and manual
+inspection of ontology mappings.
+
+\begin{table}[t]
+\centering
+\caption{Summary of automated sanity checks. All 10 checks passed without
+violations across the full dataset.}
+\label{tab:sanity}
+\small
+\begin{tabularx}{\textwidth}{@{}c l c X@{}}
+\toprule
+\textbf{\#} & \textbf{Check} & \textbf{Result} & \textbf{Detail} \\
+\midrule
+1  & DOI format (no prefix, lowercase) & PASS & 0 violations / 293M \\
+2  & Coverage flags match data presence & PASS & 0 mismatches (OA, S2AG, SSN) \\
+3  & Primary key uniqueness (no duplicate DOIs) & PASS & 293,123,121 unique = total \\
+4  & OpenAlex ID format \& joinability & PASS & 0 format violations; 69\% topic join \\
+5  & Ontology map: no orphan topic IDs & PASS & 0 orphan topic\_ids \\
+6  & RoS to OpenAlex join (10K sample) & PASS & 86\% match rate \\
+7  & Citation cross-source correlation & PASS & $r = 0.76$--$0.87$ pairwise \\
+8  & Year distribution (NULL/invalid) & PASS & NULL: 0.53\%, invalid: 0.002\% \\
+9  & Spot-check known papers & PASS & Wakefield retraction flags correct \\
+10 & Vignette count reproducibility & PASS & All 4 counts match exactly \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{DOI and Schema Integrity}
+
+Checks~1--5 verify the structural integrity of the cross-reference layer.
+The DOI format check (Check~1) confirms that all 293~million entries in
+\texttt{unified\_papers} use the canonical lowercase, prefix-free format
+with zero violations. Coverage flags (Check~2) are Boolean columns indicating
+whether each paper appears in OpenAlex, S2AG, and SciSciNet; all flags
+correctly reflect the presence or absence of data in the corresponding
+source tables. Primary key uniqueness (Check~3) confirms that each DOI
+appears exactly once. The OpenAlex ID format check (Check~4) validates that
+all IDs conform to the expected pattern and that 69\% of papers successfully
+join to the \texttt{works\_topics} table (the remainder lack topic
+assignments in OpenAlex). Check~5 verifies that every topic ID in the
+ontology mapping table exists in the OpenAlex topic taxonomy, with zero
+orphans found.
+
+\subsection{Cross-Source Citation Agreement}
+
+To assess the consistency of citation counts across databases, we computed
+pairwise Pearson correlations for papers present in all three large sources
+(S2AG, OpenAlex, SciSciNet; $n \approx 121$M). The correlations are:
+S2AG--OpenAlex $r = 0.76$, S2AG--SciSciNet $r = 0.87$, and
+OpenAlex--SciSciNet $r = 0.86$. The mean absolute differences are 4.14
+(S2AG--OA), 2.31 (S2AG--SSN), and 3.42 (OA--SSN) citations.
+
+Figure~\ref{fig:blandaltman} presents the Bland--Altman analysis of citation
+agreement between S2AG and OpenAlex. The plot reveals that disagreement
+increases with citation magnitude, and identifies systematic outliers---most
+notably a single paper with 257,887 citations in S2AG and zero in OpenAlex,
+attributable to differences in citation counting methodology and coverage
+scope.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig1_citation_bland_altman.pdf}
+\caption{Bland--Altman plot of citation count agreement between Semantic Scholar
+(S2AG) and OpenAlex. Each point represents a paper; the $x$-axis shows the mean
+citation count across both sources, and the $y$-axis shows the difference
+(S2AG $-$ OpenAlex). Dashed lines indicate the mean difference and 95\% limits
+of agreement.}
+\label{fig:blandaltman}
+\end{figure}
+
+The two-of-three correlations exceeding $r = 0.8$ confirm that the three
+sources provide broadly consistent citation information, while the
+non-negligible disagreements (particularly S2AG--OA at $r = 0.76$) underscore
+the value of preserving all three counts for sensitivity analyses.
+
+\subsection{Ontology Alignment Validation}
+
+We validated the embedding-based ontology mappings at the high-quality tier
+(similarity $\geq 0.85$; 2,527~mappings). Manual inspection of the 97~most
+difficult cases---those near the 0.85 threshold boundary---found zero
+semantically incorrect mappings. Typical borderline matches included
+legitimate cross-domain connections such as ``Bioelectronics'' (OpenAlex)
+$\to$ ``Biosensors'' (EDAM, similarity 0.856), which reflect meaningful
+semantic proximity rather than errors.
+
+\subsection{Known Limitations}
+
+The temporal coverage of individual sources introduces caveats for
+longitudinal analyses. SciSciNet metrics are computed on data through
+approximately 2022, meaning disruption and atypicality scores may not
+reflect the most recent citation dynamics. Reliance on Science patent
+citations exhibit a natural lag due to patent processing timelines,
+with coverage strongest through late 2023. Users should verify the
+temporal coverage of each source before drawing conclusions about
+recent trends. The OpenAlex topic taxonomy may evolve across snapshots,
+potentially affecting ontology mapping stability.

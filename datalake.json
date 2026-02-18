@@ -1,0 +1,166 @@
+{
+  "name": "science_datalake",
+  "description": "Unified scientific data lake with S2AG, SciSciNet, and OpenAlex datasets",
+  "version": "1.0.0",
+  "db_path": "datalake.duckdb",
+  "datasets": {
+    "s2ag": {
+      "path": "datasets/s2ag",
+      "parquet_path": "datasets/s2ag/parquet",
+      "full_name": "Semantic Scholar Academic Graph",
+      "release": "2025-12-05",
+      "format": "parquet"
+    },
+    "sciscinet": {
+      "path": "datasets/sciscinet",
+      "parquet_path": "datasets/sciscinet",
+      "full_name": "SciSciNet v2",
+      "release": "2024-11-01",
+      "format": "parquet"
+    },
+    "openalex": {
+      "path": "datasets/openalex",
+      "parquet_path": "datasets/openalex/parquet",
+      "snapshot_path": "datasets/openalex/snapshot",
+      "full_name": "OpenAlex",
+      "release": null,
+      "format": "ndjson_gz"
+    },
+    "paperswithcode": {
+      "path": "datasets/paperswithcode",
+      "parquet_path": "datasets/paperswithcode/parquet",
+      "full_name": "Papers with Code",
+      "release": "2025-07",
+      "format": "parquet"
+    },
+    "cso": {
+      "path": "datasets/cso",
+      "parquet_path": "datasets/cso/parquet",
+      "full_name": "Computer Science Ontology 3.5",
+      "release": "2024",
+      "format": "parquet",
+      "source_url": "https://cso.kmi.open.ac.uk/",
+      "type": "ontology"
+    },
+    "retractionwatch": {
+      "path": "datasets/retractionwatch",
+      "parquet_path": "datasets/retractionwatch/parquet",
+      "full_name": "Retraction Watch Database",
+      "release": "2025-02",
+      "format": "parquet",
+      "source_url": "https://gitlab.com/crossref/retraction-watch-data"
+    },
+    "reliance_on_science": {
+      "path": "datasets/reliance_on_science",
+      "parquet_path": "datasets/reliance_on_science/parquet",
+      "full_name": "Reliance on Science (Marx & Fuegi)",
+      "release": "v64",
+      "format": "parquet",
+      "source_url": "https://zenodo.org/records/15234389"
+    },
+    "preprint_to_paper": {
+      "path": "datasets/preprint_to_paper",
+      "parquet_path": "datasets/preprint_to_paper/parquet",
+      "full_name": "PreprintToPaper",
+      "release": "2025-06",
+      "format": "parquet",
+      "source_url": "https://zenodo.org/records/17185408"
+    },
+    "mesh": {
+      "path": "datasets/mesh",
+      "parquet_path": "datasets/mesh/parquet",
+      "full_name": "Medical Subject Headings (MeSH)",
+      "format": "parquet",
+      "source_url": "https://www.nlm.nih.gov/mesh/",
+      "type": "ontology"
+    },
+    "go": {
+      "path": "datasets/go",
+      "parquet_path": "datasets/go/parquet",
+      "full_name": "Gene Ontology",
+      "format": "parquet",
+      "source_url": "http://geneontology.org/",
+      "type": "ontology"
+    },
+    "doid": {
+      "path": "datasets/doid",
+      "parquet_path": "datasets/doid/parquet",
+      "full_name": "Disease Ontology",
+      "format": "parquet",
+      "source_url": "https://disease-ontology.org/",
+      "type": "ontology"
+    },
+    "chebi": {
+      "path": "datasets/chebi",
+      "parquet_path": "datasets/chebi/parquet",
+      "full_name": "Chemical Entities of Biological Interest (ChEBI)",
+      "format": "parquet",
+      "source_url": "https://www.ebi.ac.uk/chebi/",
+      "type": "ontology"
+    },
+    "hpo": {
+      "path": "datasets/hpo",
+      "parquet_path": "datasets/hpo/parquet",
+      "full_name": "Human Phenotype Ontology",
+      "format": "parquet",
+      "source_url": "https://hpo.jax.org/",
+      "type": "ontology"
+    },
+    "ncit": {
+      "path": "datasets/ncit",
+      "parquet_path": "datasets/ncit/parquet",
+      "full_name": "NCI Thesaurus",
+      "format": "parquet",
+      "source_url": "https://ncithesaurus.nci.nih.gov/",
+      "type": "ontology"
+    },
+    "edam": {
+      "path": "datasets/edam",
+      "parquet_path": "datasets/edam/parquet",
+      "full_name": "EDAM Ontology",
+      "format": "parquet",
+      "source_url": "https://edamontology.org/",
+      "type": "ontology"
+    },
+    "physh": {
+      "path": "datasets/physh",
+      "parquet_path": "datasets/physh/parquet",
+      "full_name": "Physics Subject Headings (PhySH)",
+      "format": "parquet",
+      "source_url": "https://physh.org/",
+      "type": "ontology"
+    },
+    "msc2020": {
+      "path": "datasets/msc2020",
+      "parquet_path": "datasets/msc2020/parquet",
+      "full_name": "Mathematics Subject Classification 2020",
+      "format": "parquet",
+      "source_url": "https://msc2020.org/",
+      "type": "ontology"
+    },
+    "agrovoc": {
+      "path": "datasets/agrovoc",
+      "parquet_path": "datasets/agrovoc/parquet",
+      "full_name": "AGROVOC Multilingual Thesaurus",
+      "format": "parquet",
+      "source_url": "https://agrovoc.fao.org/",
+      "type": "ontology"
+    },
+    "unesco": {
+      "path": "datasets/unesco",
+      "parquet_path": "datasets/unesco/parquet",
+      "full_name": "UNESCO Thesaurus",
+      "format": "parquet",
+      "source_url": "https://vocabularies.unesco.org/",
+      "type": "ontology"
+    },
+    "stw": {
+      "path": "datasets/stw",
+      "parquet_path": "datasets/stw/parquet",
+      "full_name": "STW Thesaurus for Economics",
+      "format": "parquet",
+      "source_url": "https://zbw.eu/stw/",
+      "type": "ontology"
+    }
+  }
+}

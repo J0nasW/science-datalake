@@ -1,0 +1,43 @@
+\section{Data Records}
+\label{sec:records}
+
+The Science Data Lake is hosted on HuggingFace Datasets
+(\textbf{[URL to be inserted upon publication]}), which provides a persistent
+DataCite DOI for citation. Remote users can query the Parquet files directly
+through DuckDB's \texttt{hf://} protocol without downloading the full dataset.
+
+The dataset comprises approximately 960\,GB of compressed Apache Parquet files
+organized into 22~schema directories, each containing one or more Parquet files
+corresponding to the tables of that schema. The lightweight DuckDB database file
+({\raise.17ex\hbox{$\scriptstyle\sim$}}500\,KB) defines 151~SQL views that
+reference these Parquet files and can be regenerated from source using the
+provided pipeline scripts.
+
+The principal schemas and their contents are:
+
+\begin{itemize}[nosep]
+  \item \texttt{s2ag}: papers (133M), abstracts, citations, authors, publication
+    venues from Semantic Scholar.
+  \item \texttt{openalex}: works (292M), authors, institutions, sources, topics,
+    concepts, publishers, funders from OpenAlex.
+  \item \texttt{sciscinet}: paper metrics (159M), disruption indices, atypicality
+    scores, team size indicators from SciSciNet.
+  \item \texttt{pwc}: papers (141K), code links, tasks, datasets, methods from
+    Papers with Code.
+  \item \texttt{retwatch}: retracted papers (60K) with retraction reasons and
+    dates from Retraction Watch.
+  \item \texttt{ros}: patent--paper citation pairs (548K) from Reliance on Science.
+  \item \texttt{p2p}: preprint-to-published DOI mappings (4M) from bioRxiv/medRxiv.
+  \item \texttt{xref}: cross-source linkage tables---\texttt{unified\_papers}
+    (293M, 29~columns), \texttt{doi\_map}, and \texttt{topic\_ontology\_map}
+    (16,150 mappings).
+  \item 13~ontology schemas (e.g., \texttt{mesh}, \texttt{go}, \texttt{cso}),
+    each containing \texttt{*\_terms}, \texttt{*\_hierarchy}, and optionally
+    \texttt{*\_xrefs} tables.
+\end{itemize}
+
+Each source retains its original license: CC0 (OpenAlex), ODC-BY (S2AG),
+CC~BY 4.0 (SciSciNet), CC~BY-SA 4.0 (Papers with Code), CC~BY-NC 4.0
+(Reliance on Science), and open/public-domain for the remaining sources.
+Users should comply with the most restrictive license applicable to the
+sources they query.

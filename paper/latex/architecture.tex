@@ -1,0 +1,184 @@
+% Architecture diagram — included from methods.tex via \input
+\begin{figure}[t]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  % Node styles
+  source/.style={
+    rectangle, rounded corners=2pt, minimum width=3.2cm, minimum height=0.65cm,
+    draw=sourceblue!70, fill=sourceblue!8, font=\small\sffamily,
+    text=black, line width=0.5pt, align=center
+  },
+  countlabel/.style={font=\scriptsize\sffamily\color{gray!70!black}, anchor=west},
+  parquetnode/.style={
+    rectangle, rounded corners=3pt, minimum width=2.4cm, minimum height=2.0cm,
+    draw=parquetgray!70, fill=parquetgray!6, font=\small\sffamily\bfseries,
+    text=parquetgray!90!black, line width=0.6pt, align=center
+  },
+  schemanode/.style={
+    rectangle, rounded corners=2pt, minimum width=3.0cm, minimum height=0.55cm,
+    draw=duckdbyellow!70!black, fill=duckdbyellow!12,
+    font=\small\ttfamily, text=black, line width=0.5pt
+  },
+  xrefnode/.style={
+    rectangle, rounded corners=2pt, minimum width=2.8cm, minimum height=0.55cm,
+    draw=xreforange!70!black, fill=xreforange!12,
+    font=\small\ttfamily, text=xreforange!85!black, line width=0.5pt
+  },
+  ontonode/.style={
+    rectangle, rounded corners=2pt, minimum width=2.8cm, minimum height=0.55cm,
+    draw=ontopurple!60, fill=ontopurple!8, font=\small\sffamily,
+    text=ontopurple!85!black, line width=0.5pt
+  },
+  groupframe/.style={
+    rectangle, rounded corners=5pt, draw=#1!40, fill=#1!3,
+    line width=0.7pt, inner sep=8pt
+  },
+  grouplabel/.style={font=\small\sffamily\bfseries, text=#1!75!black},
+  myarrow/.style={-{Stealth[length=4pt,width=3pt]}, line width=0.6pt, color=#1!60!black},
+  thickarrow/.style={-{Stealth[length=5pt,width=4pt]}, line width=0.9pt, color=#1!60!black},
+  note/.style={font=\scriptsize\sffamily, text=gray!65!black},
+]
+
+% ============================================================
+% COLUMN 1: Data Sources (x=0, spaced at 1.0 intervals)
+% ============================================================
+\node[source] (s2ag)    at (0, 0)    {Semantic Scholar};
+\node[source] (oalex)   at (0,-1.0)  {OpenAlex};
+\node[source] (ssn)     at (0,-2.0)  {SciSciNet};
+\node[source] (pwc)     at (0,-3.0)  {Papers with Code};
+\node[source] (retw)    at (0,-4.0)  {Retraction Watch};
+\node[source] (ros)     at (0,-5.0)  {Reliance on Science};
+\node[source] (p2p)     at (0,-6.0)  {Preprint-to-Published};
+\node[source] (xrefsrc) at (0,-7.0)  {Crossref};
+
+% Record counts (anchored left, positioned outside the source group frame)
+\node[countlabel] at (2.0, 0.2)    {133M};
+\node[countlabel] at (2.0,-0.7)  {292M};
+\node[countlabel] at (2.0,-1.7)  {159M};
+\node[countlabel] at (2.0,-2.7)  {141K};
+\node[countlabel] at (2.0,-3.7)  {60K};
+\node[countlabel] at (2.0,-4.7)  {548K};
+\node[countlabel] at (2.0,-5.7)  {4M};
+
+% Source group label
+\node[grouplabel=sourceblue, anchor=south] at (0, 0.7) {Data Sources};
+
+% ============================================================
+% COLUMN 2: Conversion bus + Parquet (x=3.8..6.0)
+% ============================================================
+
+% Vertical bus line (all sources feed into this)
+\coordinate (bustop)    at (3.5, 0);
+\coordinate (busbottom) at (3.5, -7.0);
+\draw[parquetgray!50, line width=1.5pt] (bustop) -- (busbottom);
+
+% Short arrows from each source to the bus
+\foreach \src in {s2ag,oalex,ssn,pwc,retw,ros,p2p,xrefsrc} {
+  \draw[myarrow=parquetgray] (\src.east) -- (3.5, 0 |- \src.east);
+}
+
+% Parquet node (centered on the bus vertically)
+\node[parquetnode] (pq) at (5, -3.5)
+  {Parquet\\[2pt]\normalfont\scriptsize{\raise.17ex\hbox{$\scriptstyle\sim$}}960\,GB};
+
+% Single thick arrow from bus to parquet
+\draw[thickarrow=parquetgray] (3.5, -3.5) -- (pq.west);
+
+% ============================================================
+% COLUMN 3 upper: DuckDB Source Schemas (x=10.0)
+% ============================================================
+
+% DuckDB title + subtitle
+\node[grouplabel=duckdbyellow, anchor=south] at (10.0, 1.0)
+  {DuckDB (22 schemas, 151 views)};
+\node[note, anchor=north] at (10.0, 0.9)
+  {view-only DB {\raise.17ex\hbox{$\scriptstyle\sim$}}500\,KB};
+
+% Source schema nodes (starting at y=0, spaced at 0.80)
+\node[schemanode] (ds1) at (10.0, 0.0)  {s2ag.*};
+\node[schemanode] (ds2) at (10.0,-0.80) {openalex.*};
+\node[schemanode] (ds3) at (10.0,-1.60) {sciscinet.*};
+\node[schemanode] (ds4) at (10.0,-2.40) {pwc.*, retwatch.*};
+\node[note]       at (10.0,-3.10)       {\textit{+ ros, p2p, main}};
+
+% ============================================================
+% COLUMN 3 lower: xref Schema (x=10.0, starting at y=-4.5)
+% ============================================================
+
+% xref group label
+\node[grouplabel=xreforange, anchor=south] at (10.0, -3.85)
+  {\texttt{xref} schema};
+
+\node[xrefnode, minimum width=3.6cm, minimum height=0.65cm] (unified) at (10.0, -4.55)
+  {unified\_papers};
+\node[note, below=1pt of unified] {293M rows, 29 columns};
+
+\node[xrefnode, minimum width=2.4cm] (doimap) at (10, -5.8) {doi\_map};
+\node[xrefnode, minimum width=3.0cm] (tomap)  at (10, -6.5) {topic\_ontology\_map};
+
+% ============================================================
+% COLUMN 4: Ontology Layer (x=15.5)
+% ============================================================
+
+% Ontology group label
+\node[grouplabel=ontopurple, anchor=south] at (15.5, -3.85)
+  {13 Ontology Schemas};
+
+\node[ontonode] (mesh)  at (15.5, -4.55) {MeSH (721K)};
+\node[ontonode] (chebi) at (15.5, -5.30) {ChEBI (205K)};
+\node[ontonode] (go)    at (15.5, -6.05) {GO (48K)};
+\node[ontonode] (cso)   at (15.5, -6.80) {CSO (26K)};
+\node[note]     at (15.5, -7.30) {\textit{+ 9 more ontologies}};
+\node[note]     at (15.5, -7.70) {1.3M terms total};
+
+% ============================================================
+% Background group frames
+% ============================================================
+\begin{scope}[on background layer]
+  % Source frame
+  \node[groupframe=sourceblue,
+    fit=(s2ag)(xrefsrc), inner sep=12pt] {};
+
+  % DuckDB frame (encompasses source schemas + xref)
+  \node[groupframe=duckdbyellow,
+    fit=(ds1)(ds4)(unified)(doimap)(tomap),
+    inner sep=14pt, inner ysep=18pt] (duckdb) {};
+
+  % Ontology frame
+  \node[groupframe=ontopurple,
+    fit=(mesh)(cso), inner xsep=14pt, inner ysep=10pt] (ontology) {};
+\end{scope}
+
+% ============================================================
+% Connecting arrows
+% ============================================================
+
+% Parquet → DuckDB schemas
+\draw[thickarrow=duckdbyellow] (pq.east) -- ++(0.4,0)
+  node[above, note, pos=0.5] {} |- (duckdb.west);
+
+% \draw[thickarrow=duckdbyellow] (pq.east) -- (duckdb.west);
+
+% Source schemas → unified_papers (dashed)
+\draw[myarrow=xreforange, densely dashed]
+  ([xshift=6pt]ds4.south) -- ++(0,-0.55) -| ([xshift=-4pt]unified.north);
+
+% topic_ontology_map → ontologies
+\draw[thickarrow=ontopurple] (tomap.east) -- ++(1.2,0)
+  node[above, note, pos=0.4] {BGE-large}
+  node[below, note, pos=0.4] {embeddings} |- (ontology.west);
+
+
+\end{tikzpicture}%
+}
+\caption{Architecture of the Science Data Lake.
+Eight open scholarly data sources (left) are converted to Apache Parquet format
+({\raise.17ex\hbox{$\scriptstyle\sim$}}960\,GB) and exposed as SQL views through
+a lightweight DuckDB database (center). Each source retains its native schema for
+source-level fidelity. The cross-referencing \texttt{xref} schema (orange) links
+records via DOI normalization (\texttt{unified\_papers}, 293M rows) and connects
+OpenAlex topics to 13~scientific ontologies (right) through BGE-large
+embedding-based alignment.}
+\label{fig:architecture}
+\end{figure}

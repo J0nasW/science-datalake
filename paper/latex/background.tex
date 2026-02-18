@@ -1,0 +1,74 @@
+\section{Background \& Summary}
+\label{sec:background}
+
+The advent of large-scale datasets tracing the workings of science has cultivated
+a rapidly expanding ``science of science'' with its own data infrastructure,
+metrics, and analytical frameworks~\cite{liu2023science}. Yet the databases that
+underpin this field remain fragmented: Semantic Scholar provides influential
+citation flags and open-access metadata~\cite{kinney2023s2ag}; OpenAlex offers
+field-weighted citation impact (FWCI) and a hierarchical topic
+taxonomy~\cite{priem2022openalex}; SciSciNet contributes disruption indices and
+atypicality scores~\cite{lin2023sciscinet}; Papers with Code links papers to
+reproducible code~\cite{paperswithcode2024}; Retraction Watch tracks integrity
+events~\cite{retractionwatch2024}; and Reliance on Science maps patent-to-paper
+citations~\cite{marx2020ros}. No single source captures all of these facets.
+Researchers who wish to study, for example, whether disruptive papers are more
+likely to release code, or whether retracted papers show anomalous citation
+patterns across databases, must write ad-hoc integration scripts that are rarely
+shared or reproduced.
+
+A systematic evaluation of 59 scholarly databases found substantial variation in
+backward and forward citation coverage~\cite{gusenbauer2024citation}. Large-scale
+pairwise comparisons of bibliographic data sources have revealed non-trivial
+differences in metadata, document types, and citation
+counts~\cite{visser2021comparison}, but record-level joins across more than two
+sources remain uncommon. The lack of a shared infrastructure forces each research
+group to repeat the same data-wrangling steps, wasting effort and introducing
+inconsistencies.
+
+Several systems have begun to address this gap (Table~\ref{tab:comparison}).
+SciSciNet~\cite{lin2023sciscinet} provides a rich ``data lake'' built on
+Microsoft Academic Graph (now OpenAlex) with pre-computed science-of-science
+metrics and linkages to patents, grants, and clinical trials, but its
+bibliometric backbone draws from a single index and it does not preserve
+independent source-level schemas for cross-source comparison.
+PubGraph~\cite{ahrabian2023pubgraph} merges Wikidata, OpenAlex, and Semantic
+Scholar into a unified knowledge graph using the Wikidata ontology, but
+collapses source-level schemas, sacrificing the ability to compare how different
+sources describe the same paper. SemOpenAlex~\cite{farber2023semopenalex}
+re-encodes OpenAlex as 26~billion RDF triples, offering semantic-web
+interoperability but remaining a single-source resource.
+Dimensions~\cite{hook2018dimensions} provides SQL-queryable access to a
+comprehensive commercial database, but its proprietary nature limits
+reproducibility.
+
+\begin{table}[t]
+\centering
+\caption{Comparison with existing scholarly data integration systems.}
+\label{tab:comparison}
+\small
+\begin{tabularx}{\textwidth}{@{}l c c c c X@{}}
+\toprule
+\textbf{System} & \textbf{Sources} & \textbf{Multi-source} & \textbf{Source schemas} & \textbf{Open} & \textbf{Key limitation} \\
+\midrule
+SciSciNet~\cite{lin2023sciscinet}        & 1+ & \texttimes & --- & \checkmark & Single bibliometric index \\
+PubGraph~\cite{ahrabian2023pubgraph}     & 3 & \checkmark & Merged & \checkmark & Loses source-level detail \\
+SemOpenAlex~\cite{farber2023semopenalex} & 1 & \texttimes & --- & \checkmark & Single source (OpenAlex) \\
+Dimensions~\cite{hook2018dimensions}     & 1 & \texttimes & --- & Partial & Commercial, limited access \\
+\textbf{Science Data Lake (ours)}        & \textbf{8} & \checkmark & \textbf{Preserved} & \checkmark & Requires local storage \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The Science Data Lake addresses these limitations through three contributions.
+\textbf{First}, a \emph{multi-source preserving architecture} that integrates
+eight open scholarly databases into a single DuckDB-queryable resource while
+retaining each source's native schema, enabling direct cross-source comparison at
+the record level. \textbf{Second}, an \emph{embedding-based ontology alignment}
+method that bridges OpenAlex's flat topic taxonomy to 13~formal scientific
+ontologies using BGE-large sentence embeddings~\cite{xiao2024bge}, achieving a
+17-fold improvement over string-matching baselines. \textbf{Third}, a
+\emph{cross-source record-level comparison layer} (\texttt{unified\_papers},
+293M rows, 29~columns) that enables simultaneous queries across all
+sources---supporting analyses such as multi-database citation reliability
+assessment that no single source or pairwise comparison can provide.

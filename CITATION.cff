@@ -1,0 +1,56 @@
+cff-version: 1.2.0
+title: "Science Data Lake: A Unified, Portable Data Lake for Full-Lifecycle Scholarly Analysis"
+message: "If you use this dataset, please cite it using the metadata from this file."
+type: dataset
+authors:
+  - family-names: Wilinski
+    given-names: Jonas
+    # orcid: "https://orcid.org/0000-0000-0000-0000"  # TODO: Add ORCID
+repository-code: "https://github.com/TODO/science-datalake"
+url: "https://huggingface.co/datasets/TODO/science-datalake"
+abstract: >-
+  A unified, portable science data lake integrating 8 complementary scholarly
+  datasets (293M+ unique DOIs, ~960 GB Parquet) with cross-dataset DOI normalization,
+  13 scientific ontologies (1.3M terms), and a reproducible ETL pipeline.
+  Enables full-lifecycle analysis of scholarly works — from preprint to patent —
+  via standard SQL on commodity hardware.
+keywords:
+  - scholarly data
+  - bibliometrics
+  - science of science
+  - citation analysis
+  - knowledge graph
+  - open science
+  - DuckDB
+  - Parquet
+  - OpenAlex
+  - Semantic Scholar
+  - scientific ontologies
+license: MIT
+version: "1.0.0"
+date-released: "2026-02-17"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.TODO"
+    description: "Zenodo concept DOI (always resolves to latest version)"
+references:
+  - type: dataset
+    title: "OpenAlex"
+    authors:
+      - family-names: Priem
+        given-names: Jason
+    year: 2022
+    doi: "10.48550/arXiv.2205.01833"
+  - type: dataset
+    title: "SciSciNet"
+    authors:
+      - family-names: Lin
+        given-names: Zihang
+    year: 2023
+    doi: "10.1038/s41597-023-02198-9"
+  - type: dataset
+    title: "Semantic Scholar Academic Graph"
+    authors:
+      - family-names: Kinney
+        given-names: Rodney
+    year: 2023

@@ -1,0 +1,36 @@
+\section{Code Availability}
+\label{sec:code}
+
+All code for constructing and querying the Science Data Lake is available in a
+public GitHub repository (\textbf{[URL to be inserted upon publication]}).
+The pipeline is implemented in Python~3.12 with the
+following principal dependencies: DuckDB~1.4.2~\cite{raasveldt2019duckdb},
+PyArrow~22.0, and sentence-transformers~5.2.2 (for ontology alignment).
+
+The pipeline comprises five stages, each implemented as a subcommand of the
+master CLI script:
+
+\begin{enumerate}[nosep]
+  \item \textbf{Download} (\texttt{datalake\_cli.py download}): retrieves
+    source snapshots from their official distribution points (S3 buckets,
+    APIs, direct downloads).
+  \item \textbf{Convert} (\texttt{datalake\_cli.py convert}): transforms
+    each source from its native format (JSON Lines, CSV, N-Triples) into
+    columnar Apache Parquet files.
+  \item \textbf{Create views} (\texttt{create\_unified\_db.py}): generates
+    the DuckDB database with 151~SQL views across 22~schemas.
+  \item \textbf{Materialize} (\texttt{materialize\_unified\_papers.py}):
+    constructs the \texttt{xref.unified\_papers} join table through DOI
+    normalization and multi-source record linkage.
+  \item \textbf{Build linkage} (\texttt{build\_embedding\_linkage.py}):
+    computes BGE-large embeddings for ontology terms and OpenAlex topics,
+    builds a FAISS index, and produces the ontology alignment table
+    \texttt{xref.topic\_ontology\_map}.
+\end{enumerate}
+
+Additional scripts include \texttt{convert\_ontologies.py} (five
+format-specific parsers for the 13~ontologies) and
+\texttt{ontology\_registry.py} (a declarative registry of ontology URLs
+and formats). The full pipeline runs in approximately 48~hours on a
+workstation with a 24-core CPU, 256\,GB RAM, and an NVIDIA RTX A4500 GPU
+(used only for embedding computation).

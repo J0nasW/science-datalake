@@ -1,7 +1,11 @@
 ---
 language:
 - en
-license: cc-by-4.0
+license:
+- cc0-1.0
+- cc-by-4.0
+- cc-by-sa-4.0
+- cc-by-nc-sa-4.0
 size_categories:
 - 100M<n<1B
 task_categories:
@@ -14,7 +18,6 @@ tags:
 - bibliometrics
 - science-of-science
 - openalex
-- semantic-scholar
 - sciscinet
 - papers-with-code
 - duckdb
@@ -30,7 +33,7 @@ configs:
     data_files: "xref/topic_ontology_map/*.parquet"
   - config_name: ontology_bridges
     data_files: "xref/ontology_bridges/*.parquet"
-  # OpenAlex
+  # OpenAlex (CC0 1.0)
   - config_name: openalex_works
     data_files: "openalex/works/*.parquet"
   - config_name: openalex_authors
@@ -47,25 +50,12 @@ configs:
     data_files: "openalex/works_keywords/*.parquet"
   - config_name: openalex_institutions
     data_files: "openalex/institutions/*.parquet"
-  # S2AG
-  - config_name: s2ag_papers
-    data_files: "s2ag/papers/*.parquet"
-  - config_name: s2ag_abstracts
-    data_files: "s2ag/abstracts/*.parquet"
-  - config_name: s2ag_citations
-    data_files: "s2ag/citations/*.parquet"
-  - config_name: s2ag_authors
-    data_files: "s2ag/authors/*.parquet"
-  - config_name: s2ag_tldrs
-    data_files: "s2ag/tldrs/*.parquet"
-  - config_name: s2ag_paper_ids
-    data_files: "s2ag/paper_ids/*.parquet"
-  # SciSciNet
+  # SciSciNet (CC BY 4.0)
   - config_name: sciscinet_core
     data_files: "sciscinet/core/*.parquet"
   - config_name: sciscinet_large
     data_files: "sciscinet/large/*.parquet"
-  # Papers With Code
+  # Papers With Code (CC BY-SA 4.0)
   - config_name: pwc_papers
     data_files: "pwc/papers/*.parquet"
   - config_name: pwc_paper_has_code
@@ -79,11 +69,9 @@ configs:
   # Other sources
   - config_name: retwatch
     data_files: "retwatch/retraction_watch/*.parquet"
-  - config_name: ros_patent_paper_pairs
-    data_files: "ros/patent_paper_pairs/*.parquet"
   - config_name: p2p_preprint_to_paper
     data_files: "p2p/preprint_to_paper/*.parquet"
-  # Ontologies (all 13 combined)
+  # Ontologies (various licenses, see below)
   - config_name: ontology_terms
     data_files: "ontologies/*_terms.parquet"
   - config_name: ontology_hierarchy
@@ -94,7 +82,9 @@ configs:
 
 # Science Data Lake
 
-A unified, portable science data lake integrating **8 complementary scholarly datasets** (293M+ unique DOIs, ~960 GB Parquet) with cross-dataset DOI normalization, **13 scientific ontologies** (1.3M terms), and a reproducible ETL pipeline.
+A unified, portable science data lake integrating **6 scholarly datasets** (~523 GB Parquet) with cross-dataset DOI normalization, **13 scientific ontologies** (1.3M terms), and a reproducible ETL pipeline.
+
+> **Note:** Two additional sources (Semantic Scholar S2AG and Reliance on Science) are supported by the pipeline but are **not redistributed here** pending license clarification. See [Not Included in This Upload](#not-included-in-this-upload) below.
 
 ## What's Unique
 
@@ -105,7 +95,6 @@ This dataset enables queries that are **impossible with any single source**:
 SELECT doi, title, year,
        sciscinet_disruption,      -- from SciSciNet
        oa_cited_by_count,         -- from OpenAlex
-       s2ag_citationcount,        -- from S2AG
        has_pwc,                   -- from Papers With Code
        has_retraction             -- from Retraction Watch
 FROM unified_papers
@@ -114,18 +103,39 @@ ORDER BY oa_cited_by_count DESC
 LIMIT 20
 ```
 
-## Datasets Integrated
+## Datasets Included
 
-| Dataset | Papers/Records | Key Contribution |
-|---------|---------------|-----------------|
-| **OpenAlex** | 479M works | Broadest coverage, topics, FWCI |
-| **S2AG** (Semantic Scholar) | 231M papers | Citation context/intent, TLDRs |
-| **SciSciNet** | 159M papers | Disruption index, atypicality, patent/grant linkage |
-| **Papers With Code** | 513K papers | Method-task-dataset-code links |
-| **Retraction Watch** | 69K records | Retraction flags + reasons |
-| **Reliance on Science** | 548K pairs | Patent-paper citation links |
-| **Preprint-to-Paper** | 146K pairs | bioRxiv preprint ↔ published paper |
-| **13 Ontologies** | 1.3M terms | CSO, MeSH, GO, DOID, ChEBI, NCIT, HPO, EDAM, AGROVOC, UNESCO, STW, MSC2020, PhySH |
+| Dataset | Papers/Records | License | Key Contribution |
+|---------|---------------|---------|-----------------|
+| **OpenAlex** | 479M works | **CC0 1.0** (public domain) | Broadest coverage, topics, FWCI |
+| **SciSciNet** v2 | 159M papers | **CC BY 4.0** | Disruption index, atypicality, team size |
+| **Papers With Code** | 513K papers | **CC BY-SA 4.0** | Method-task-dataset-code links |
+| **Retraction Watch** | 69K records | **Open** (via Crossref) | Retraction flags + reasons |
+| **Preprint-to-Paper** | 146K pairs | **CC BY 4.0** | bioRxiv preprint to published paper |
+| **13 Ontologies** | 1.3M terms | Various (see below) | CSO, MeSH, GO, DOID, ChEBI, NCIT, HPO, EDAM, AGROVOC, UNESCO, STW, MSC2020, PhySH |
+
+### Ontology Licenses
+
+| Ontology | License |
+|----------|---------|
+| MeSH | Public Domain (US government work) |
+| GO, ChEBI, NCIT, EDAM, CSO, PhySH, STW | CC BY 4.0 |
+| DOID | CC0 1.0 |
+| AGROVOC | CC BY 3.0 IGO |
+| UNESCO Thesaurus | CC BY-SA 3.0 IGO |
+| HPO | Custom (free for research use) |
+| MSC2020 | **CC BY-NC-SA 4.0** (non-commercial) |
+
+### Not Included in This Upload
+
+The following sources are supported by the full pipeline ([GitHub](https://github.com/J0nasW/science-datalake)) but are **not redistributed here** due to license restrictions or pending clarification:
+
+| Dataset | Reason | How to obtain |
+|---------|--------|---------------|
+| **S2AG** (Semantic Scholar, 231M papers) | License requires individual agreement with Semantic Scholar | [Semantic Scholar Datasets API](https://api.semanticscholar.org/api-docs/datasets) |
+| **Reliance on Science** (548K patent-paper pairs) | CC BY-NC 4.0 — non-commercial restriction | [Zenodo record](https://zenodo.org/records/8278104) |
+
+After downloading these sources locally, run the full pipeline to integrate them.
 
 ## Key Tables
 
@@ -138,19 +148,17 @@ The headline table: one row per unique DOI, joining all sources.
 | `title` | VARCHAR | Best available title (OpenAlex > S2AG) |
 | `year` | BIGINT | Publication year |
 | `openalex_id` | VARCHAR | OpenAlex work ID |
-| `s2ag_corpusid` | BIGINT | S2AG corpus ID |
 | `sciscinet_paperid` | VARCHAR | SciSciNet paper ID |
-| `has_s2ag` | BOOLEAN | Present in S2AG |
 | `has_openalex` | BOOLEAN | Present in OpenAlex |
 | `has_sciscinet` | BOOLEAN | Present in SciSciNet |
 | `has_pwc` | BOOLEAN | Has code on Papers With Code |
 | `has_retraction` | BOOLEAN | Flagged in Retraction Watch |
-| `has_patent` | BOOLEAN | Cited in patents (via RoS) |
 | `oa_cited_by_count` | BIGINT | OpenAlex citation count |
-| `s2ag_citationcount` | BIGINT | S2AG citation count |
 | `sciscinet_disruption` | DOUBLE | Disruption index (CD index) |
 | `sciscinet_atypicality` | DOUBLE | Atypicality score |
 | `oa_fwci` | DOUBLE | Field-Weighted Citation Impact |
+
+> **Note:** The locally-built version of `unified_papers` includes additional columns from S2AG and RoS (`s2ag_corpusid`, `s2ag_citationcount`, `has_s2ag`, `has_patent`). These columns are present in the uploaded file but will contain NULL values for users who have not integrated those sources locally.
 
 ### `topic_ontology_map`
 Maps OpenAlex's 4,516 topics to terms in 13 scientific ontologies via embedding-based semantic similarity (BGE-large-en-v1.5, 1024-dim) + exact matching for large ontologies (MeSH, ChEBI, NCIT). 16,150 mappings covering 99.8% of topics. Columns include `similarity` (cosine, 0-1) and `match_type` (label/synonym/exact) for quality filtering.
@@ -176,9 +184,9 @@ df = con.execute("""
 """).df()
 ```
 
-## Building Your Own Instance
+## Building the Full Instance (All 8 Sources)
 
-Clone the GitHub repository and run the pipeline:
+Clone the GitHub repository and run the pipeline to integrate all sources including S2AG and RoS:
 
 ```bash
 git clone https://github.com/J0nasW/science-datalake
@@ -194,7 +202,7 @@ python scripts/materialize_unified_papers.py
 ```bibtex
 @dataset{wilinski2026sciencedatalake,
   title={Science Data Lake: A Unified, Portable Data Lake for Full-Lifecycle Scholarly Analysis},
-  author={Wilinski, Jonas},
+  author={Wilinski, Piotr},
   year={2026},
   publisher={HuggingFace},
   url={https://huggingface.co/datasets/J0nasW/science-datalake},
@@ -204,10 +212,15 @@ python scripts/materialize_unified_papers.py
 
 ## License
 
-The integration scripts are MIT licensed. Individual datasets retain their original licenses:
-- OpenAlex: CC0
-- S2AG: ODC-BY
-- SciSciNet: CC BY 4.0
-- Papers With Code: CC BY-SA
-- Retraction Watch: Custom (research use)
-- Reliance on Science: CC BY-NC 4.0
+This dataset aggregates multiple sources, each with its own license. **Users must comply with the most restrictive license applicable to the sources they use.**
+
+| Component | License |
+|-----------|---------|
+| Integration code (scripts, pipeline) | MIT |
+| OpenAlex data | CC0 1.0 (public domain) |
+| SciSciNet v2 data | CC BY 4.0 |
+| Papers With Code data | CC BY-SA 4.0 |
+| Retraction Watch data | Open (via Crossref) |
+| Preprint-to-Paper data | CC BY 4.0 |
+| Cross-reference tables (`unified_papers`, `topic_ontology_map`) | Derived work — most restrictive source license applies |
+| Ontologies | Various — see table above; note **MSC2020 is CC BY-NC-SA 4.0** |

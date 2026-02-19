@@ -303,15 +303,73 @@
             color: #e2e8f0;
             padding: 1.5rem 2rem;
             border-radius: 10px;
-            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
             font-size: 0.85rem;
-            line-height: 1.6;
+            line-height: 1.7;
             overflow-x: auto;
+            white-space: pre;
         }
 
         .arch-box .dim { color: #6b7280; }
         .arch-box .hl { color: #60a5fa; }
         .arch-box .gr { color: #86efac; }
+
+        /* Clickable figures */
+        .figure { cursor: zoom-in; }
+
+        /* Lightbox overlay */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(0,0,0,0.88);
+            backdrop-filter: blur(4px);
+            cursor: zoom-out;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 95vw;
+            max-height: 92vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+        }
+
+        .lightbox-caption {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.75);
+            color: #e2e8f0;
+            padding: 0.75rem 2rem;
+            font-size: 0.88rem;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .lightbox-close {
+            position: fixed;
+            top: 1rem;
+            right: 1.5rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.15s;
+            z-index: 1001;
+            line-height: 1;
+        }
+
+        .lightbox-close:hover { opacity: 1; }
 
         /* Footer */
         footer {
@@ -506,19 +564,17 @@
     <div class="container">
         <h2>Architecture</h2>
         <p class="section-lead">A lightweight DuckDB database defines 151 SQL views pointing to Parquet files. No data is copied into the database &mdash; only view definitions.</p>
-        <div class="arch-box">
-<span class="hl">datalake.duckdb</span> <span class="dim">(500 KB, view definitions only)</span>
-  ├── <span class="hl">s2ag.*</span>          <span class="dim">→ datasets/s2ag/parquet/**/*.parquet</span>          <span class="gr">(437 GB)</span>
-  ├── <span class="hl">openalex.*</span>      <span class="dim">→ datasets/openalex/parquet/**/*.parquet</span>      <span class="gr">(262 GB)</span>
-  ├── <span class="hl">sciscinet.*</span>     <span class="dim">→ datasets/sciscinet/{core,large}/*.parquet</span>   <span class="gr">(151 GB)</span>
-  ├── <span class="hl">pwc.*</span>           <span class="dim">→ datasets/paperswithcode/parquet/*.parquet</span>   <span class="gr">(6.2 GB)</span>
-  ├── <span class="hl">retwatch.*</span>      <span class="dim">→ datasets/retractionwatch/parquet/*.parquet</span>  <span class="gr">(70 MB)</span>
-  ├── <span class="hl">ros.*</span>           <span class="dim">→ datasets/reliance_on_science/parquet/*.parquet</span> <span class="gr">(2.7 GB)</span>
-  ├── <span class="hl">p2p.*</span>           <span class="dim">→ datasets/preprint_to_paper/parquet/*.parquet</span> <span class="gr">(735 MB)</span>
-  ├── <span class="hl">{ont}.*</span>         <span class="dim">→ datasets/{ont}/parquet/*.parquet</span>            <span class="gr">(56 MB)</span>
-  ├── <span class="hl">xref.doi_map</span>    <span class="dim">→ UNION ALL across datasets (normalized DOIs)</span> <span class="gr">(588M rows)</span>
-  └── <span class="hl">xref.unified_papers</span> <span class="dim">→ Materialized cross-source join</span>         <span class="gr">(293M rows)</span>
-        </div>
+        <div class="arch-box"><span class="hl">datalake.duckdb</span> <span class="dim">(500 KB, view definitions only)</span>
+ ├── <span class="hl">s2ag.*</span>              <span class="dim">→ datasets/s2ag/parquet/**/*.parquet</span>              <span class="gr">(437 GB)</span>
+ ├── <span class="hl">openalex.*</span>          <span class="dim">→ datasets/openalex/parquet/**/*.parquet</span>          <span class="gr">(262 GB)</span>
+ ├── <span class="hl">sciscinet.*</span>         <span class="dim">→ datasets/sciscinet/{core,large}/*.parquet</span>       <span class="gr">(151 GB)</span>
+ ├── <span class="hl">pwc.*</span>               <span class="dim">→ datasets/paperswithcode/parquet/*.parquet</span>       <span class="gr">(6.2 GB)</span>
+ ├── <span class="hl">retwatch.*</span>          <span class="dim">→ datasets/retractionwatch/parquet/*.parquet</span>      <span class="gr">(70 MB)</span>
+ ├── <span class="hl">ros.*</span>               <span class="dim">→ datasets/reliance_on_science/parquet/*.parquet</span>  <span class="gr">(2.7 GB)</span>
+ ├── <span class="hl">p2p.*</span>               <span class="dim">→ datasets/preprint_to_paper/parquet/*.parquet</span>   <span class="gr">(735 MB)</span>
+ ├── <span class="hl">{ont}.*</span>             <span class="dim">→ datasets/{ont}/parquet/*.parquet</span>                <span class="gr">(56 MB)</span>
+ ├── <span class="hl">xref.doi_map</span>        <span class="dim">→ UNION ALL across datasets (normalized DOIs)</span>     <span class="gr">(588M rows)</span>
+ └── <span class="hl">xref.unified_papers</span> <span class="dim">→ Materialized cross-source join</span>                 <span class="gr">(293M rows)</span></div>
     </div>
 </section>
 
@@ -678,6 +734,44 @@ python scripts/datalake_cli.py update openalex</code></pre>
         <a href="https://x.com/Jonas_H_W">@Jonas_H_W</a>
     </p>
 </footer>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+    <span class="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="">
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<script>
+(function() {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+
+    document.querySelectorAll('.figure').forEach(function(fig) {
+        fig.addEventListener('click', function() {
+            const img = fig.querySelector('img');
+            const caption = fig.querySelector('figcaption');
+            if (!img) return;
+            lightboxImg.src = img.src;
+            lightboxImg.alt = img.alt;
+            lightboxCaption.textContent = caption ? caption.textContent : '';
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    lightbox.addEventListener('click', closeLightbox);
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
+})();
+</script>
 
 </body>
 </html>

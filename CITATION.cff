@@ -5,7 +5,7 @@ type: dataset
 authors:
   - family-names: Wilinski
     given-names: Jonas
-    # orcid: "https://orcid.org/0000-0000-0000-0000"  # TODO: Add ORCID
+    orcid: "https://orcid.org/0009-0005-4672-7197"
 repository-code: "https://github.com/J0nasW/science-datalake"
 url: "https://huggingface.co/datasets/J0nasW/science-datalake"
 abstract: >-

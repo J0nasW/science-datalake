@@ -48,4 +48,6 @@ Thumbs.db
 
 # Embedding caches (large binary files)
 datasets/xref/topic_ontology_embeddings/
-paper/sciscinet_paper.pdf
+
+# Custom
+paper/endorsement_outreach.md

@@ -4,12 +4,13 @@ and divergent metadata. We present the Science Data Lake, a locally-deployable
 infrastructure built on DuckDB and Apache Parquet that unifies eight open sources---Semantic
 Scholar, OpenAlex, SciSciNet, Papers with Code, Retraction Watch, Reliance on Science,
 a preprint-to-published mapping, and Crossref---via DOI normalization while preserving
-source-level schemas. The resource comprises 293~million unique papers across 22~schemas
-and 151~SQL views. An embedding-based ontology alignment using BGE-large maps 4,516
+source-level schemas. The resource comprises approximately 960\,GB of Parquet files spanning
+293~million unique papers across 22~schemas and 151~SQL views. An embedding-based ontology alignment using BGE-large maps 4,516
 OpenAlex topics to 13~scientific ontologies (1.3~million terms), yielding 16,150
 mappings with 99.8\% topic coverage---a 17-fold improvement over string matching. We
 validate through 10~automated checks, cross-source citation agreement analysis (pairwise
 Pearson $r = 0.76$--$0.87$), and manual inspection. Four vignettes demonstrate
-cross-source analyses infeasible with any single database. The resource is open source
-and deployable on a single drive or via HuggingFace.
+cross-source analyses infeasible with any single database. The resource is open source, deployable on a single drive or queryable
+remotely via HuggingFace, and includes structured documentation designed
+for LLM-based research agents.
 \end{abstract}

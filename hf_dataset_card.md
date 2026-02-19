@@ -25,7 +25,7 @@ tags:
 - ontologies
 - knowledge-graph
 pretty_name: Science Data Lake
-thumbnail: sdl_banner.jpg
+thumbnail: https://raw.githubusercontent.com/J0nasW/science-datalake/main/sdl_banner.jpg
 configs:
   # Cross-reference tables
   - config_name: unified_papers
@@ -82,7 +82,7 @@ configs:
 ---
 
 <p align="center">
-  <img src="sdl_banner.jpg" alt="Science Data Lake" width="100%">
+  <img src="https://raw.githubusercontent.com/J0nasW/science-datalake/main/sdl_banner.jpg" alt="Science Data Lake" width="100%">
 </p>
 
 <p align="center">

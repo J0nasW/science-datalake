@@ -25,6 +25,7 @@ tags:
 - ontologies
 - knowledge-graph
 pretty_name: Science Data Lake
+thumbnail: sdl_banner.jpg
 configs:
   # Cross-reference tables
   - config_name: unified_papers
@@ -79,6 +80,18 @@ configs:
   - config_name: ontology_xrefs
     data_files: "ontologies/*_xrefs.parquet"
 ---
+
+<p align="center">
+  <img src="sdl_banner.jpg" alt="Science Data Lake" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/J0nasW/science-datalake"><img src="https://img.shields.io/badge/GitHub-Repository-181717?logo=github" alt="GitHub"></a>
+  <a href="https://doi.org/10.57967/hf/7850"><img src="https://img.shields.io/badge/DOI-10.57967%2Fhf%2F7850-blue" alt="DOI"></a>
+  <a href="https://github.com/J0nasW/science-datalake/blob/main/SCHEMA.md"><img src="https://img.shields.io/badge/LLM--Ready-SCHEMA.md-purple" alt="LLM-Ready"></a>
+  <a href="https://x.com/Jonas_H_W"><img src="https://img.shields.io/badge/Follow-%40Jonas__H__W-black?logo=x" alt="Follow on X"></a>
+  <a href="https://wilinski.me"><img src="https://img.shields.io/badge/Author-wilinski.me-orange" alt="Author website"></a>
+</p>
 
 # Science Data Lake
 

@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Science Data Lake</title>
+    <title>Science Data Lake — Unified Scholarly Data Infrastructure</title>
+    <meta name="description" content="A unified, portable data lake integrating 8 scholarly datasets (480M+ papers, ~960 GB), 13 scientific ontologies (1.3M terms), and cross-dataset linking via DuckDB.">
     <script type="application/ld+json">
     {
         "@context": "https://schema.org/",
@@ -14,203 +15,677 @@
         "url": "https://huggingface.co/datasets/J0nasW/science-datalake",
         "identifier": "https://doi.org/10.57967/hf/7850",
         "license": "https://creativecommons.org/licenses/by/4.0/",
-        "creator": {"@type": "Person", "name": "Jonas Wilinski"},
+        "creator": {"@type": "Person", "name": "Jonas Wilinski", "url": "https://wilinski.me"},
         "datePublished": "2026-02-17",
         "keywords": ["scholarly data", "bibliometrics", "science of science", "citation analysis", "DuckDB", "Parquet"],
         "distribution": [{"@type": "DataDownload", "encodingFormat": "application/x-parquet", "contentUrl": "https://huggingface.co/datasets/J0nasW/science-datalake"}]
     }
     </script>
     <style>
+        :root {
+            --blue: #0066cc;
+            --blue-dark: #004d99;
+            --blue-light: #e8f2ff;
+            --purple: #7c3aed;
+            --green: #059669;
+            --orange: #d97706;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem;
-            color: #333;
+            color: var(--gray-800);
             line-height: 1.6;
         }
 
-        h1 {
-            color: #1a1a1a;
-            border-bottom: 2px solid #0066cc;
-            padding-bottom: 0.5rem;
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, var(--gray-900) 0%, #1e3a5f 100%);
+            color: white;
+            padding: 0;
+            text-align: center;
+        }
+
+        .hero-banner {
+            width: 100%;
+            max-height: 340px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .hero-content {
+            padding: 2.5rem 2rem 3rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .hero .subtitle {
+            font-size: 1.15rem;
+            color: #cbd5e1;
+            max-width: 700px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .hero-badges {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-badges img { height: 22px; }
+
+        .hero-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .hero-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: transform 0.1s;
+        }
+
+        .hero-links a:hover { transform: translateY(-1px); }
+
+        .btn-primary {
+            background: var(--blue);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        section {
+            padding: 3.5rem 0;
+        }
+
+        section:nth-child(even) {
+            background: var(--gray-50);
         }
 
         h2 {
-            color: #0066cc;
-            margin-top: 2rem;
+            font-size: 1.75rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
         }
 
-        code {
-            background: #f4f4f4;
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
-            font-size: 0.9em;
+        .section-lead {
+            color: var(--gray-600);
+            font-size: 1.05rem;
+            margin-bottom: 2rem;
+            max-width: 700px;
         }
 
-        pre {
-            background: #f4f4f4;
-            padding: 1rem;
-            border-radius: 5px;
-            overflow-x: auto;
+        /* Stats strip */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            padding: 2rem 0;
         }
 
+        .stat-card {
+            text-align: center;
+            padding: 1.25rem 0.5rem;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .stat-card .label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 0.2rem;
+        }
+
+        /* Datasets table */
         table {
             border-collapse: collapse;
             width: 100%;
             margin: 1rem 0;
+            font-size: 0.92rem;
         }
 
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 0.5rem;
+        th, td {
+            border: 1px solid var(--gray-200);
+            padding: 0.6rem 0.8rem;
             text-align: left;
         }
 
         th {
-            background: #f0f0f0;
+            background: var(--gray-100);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--gray-600);
         }
 
-        .badge {
+        tr:hover { background: var(--blue-light); }
+
+        .license-tag {
             display: inline-block;
-            padding: 0.25em 0.6em;
-            font-size: 0.85em;
-            background: #0066cc;
-            color: white;
+            padding: 0.1em 0.5em;
             border-radius: 3px;
-            margin: 0.1em;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
 
-        a {
-            color: #0066cc;
+        .license-cc0 { background: #d1fae5; color: #065f46; }
+        .license-ccby { background: #dbeafe; color: #1e40af; }
+        .license-ccbysa { background: #ede9fe; color: #5b21b6; }
+        .license-ccbync { background: #fef3c7; color: #92400e; }
+        .license-open { background: #f3f4f6; color: #374151; }
+
+        /* Figures */
+        .figure {
+            margin: 2rem 0;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
-        .stats {
+        .figure img {
+            width: 100%;
+            display: block;
+        }
+
+        .figure figcaption {
+            padding: 0.8rem 1.2rem;
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            border-top: 1px solid var(--gray-200);
+            background: var(--gray-50);
+        }
+
+        .figure figcaption strong {
+            color: var(--gray-800);
+        }
+
+        .figures-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
+            grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+            gap: 1.5rem;
         }
 
-        .stat-card {
-            background: #f8f9fa;
-            padding: 1rem;
+        /* Code blocks */
+        pre {
+            background: var(--gray-900);
+            color: #e2e8f0;
+            padding: 1.2rem 1.5rem;
             border-radius: 8px;
-            text-align: center;
+            overflow-x: auto;
+            font-size: 0.88rem;
+            line-height: 1.5;
         }
 
-        .stat-card .number {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #0066cc;
+        code {
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+        }
+
+        pre code { color: inherit; background: none; padding: 0; }
+
+        code {
+            background: var(--gray-100);
+            padding: 0.15em 0.35em;
+            border-radius: 3px;
+            font-size: 0.88em;
+        }
+
+        .code-comment { color: #6b7280; }
+        .code-string { color: #86efac; }
+        .code-keyword { color: #93c5fd; }
+
+        /* Feature cards */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.05rem;
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .feature-card p {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Architecture diagram */
+        .arch-box {
+            background: var(--gray-900);
+            color: #e2e8f0;
+            padding: 1.5rem 2rem;
+            border-radius: 10px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .arch-box .dim { color: #6b7280; }
+        .arch-box .hl { color: #60a5fa; }
+        .arch-box .gr { color: #86efac; }
+
+        /* Footer */
+        footer {
+            background: var(--gray-900);
+            color: #94a3b8;
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        footer a { color: #60a5fa; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.75rem; }
+            .figures-grid { grid-template-columns: 1fr; }
+            .stats { grid-template-columns: repeat(3, 1fr); }
+            section { padding: 2.5rem 0; }
         }
     </style>
 </head>
 
 <body>
-    <h1>Science Data Lake</h1>
-    <p>A unified, portable science data lake for full-lifecycle scholarly analysis — from preprint to patent.</p>
 
-    <div class="stats">
-        <div class="stat-card">
-            <div class="number">293M</div>Unique DOIs
+<!-- Hero -->
+<header class="hero">
+    <img src="sdl_banner.jpg" alt="Science Data Lake banner" class="hero-banner">
+    <div class="hero-content">
+        <h1>Science Data Lake</h1>
+        <p class="subtitle">A unified, portable data lake for full-lifecycle scholarly analysis &mdash; from preprint to patent. 8 datasets, 13 ontologies, one SQL interface.</p>
+        <div class="hero-badges">
+            <a href="https://doi.org/10.57967/hf/7850"><img src="https://img.shields.io/badge/DOI-10.57967%2Fhf%2F7850-blue" alt="DOI"></a>
+            <img src="https://img.shields.io/badge/Size-~960%20GB-informational" alt="Size">
+            <img src="https://img.shields.io/badge/Code%20License-MIT-green" alt="MIT License">
+            <img src="https://img.shields.io/badge/DuckDB-Parquet-yellow" alt="DuckDB + Parquet">
+            <a href="https://github.com/J0nasW/science-datalake/blob/main/SCHEMA.md"><img src="https://img.shields.io/badge/LLM--Ready-SCHEMA.md-purple" alt="LLM-Ready"></a>
         </div>
-        <div class="stat-card">
-            <div class="number">8</div>Data Sources
+        <div class="stats container">
+            <div class="stat-card">
+                <div class="number">293M</div>
+                <div class="label">Unique DOIs</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">480M+</div>
+                <div class="label">Total Records</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">8</div>
+                <div class="label">Data Sources</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">13</div>
+                <div class="label">Ontologies</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">1.3M</div>
+                <div class="label">Ontology Terms</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">151</div>
+                <div class="label">SQL Views</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="number">13</div>Ontologies
-        </div>
-        <div class="stat-card">
-            <div class="number">1.3M</div>Ontology Terms
-        </div>
-        <div class="stat-card">
-            <div class="number">16K</div>Topic&harr;Ontology Links
+        <div class="hero-links">
+            <a href="https://huggingface.co/datasets/J0nasW/science-datalake" class="btn-primary">Dataset on HuggingFace</a>
+            <a href="https://github.com/J0nasW/science-datalake" class="btn-secondary">GitHub Repository</a>
+            <a href="https://github.com/J0nasW/science-datalake/blob/main/SCHEMA.md" class="btn-secondary">SCHEMA.md (LLM ref)</a>
+            <a href="https://doi.org/10.57967/hf/7850" class="btn-secondary">Cite (DOI)</a>
         </div>
     </div>
+</header>
 
-    <h2>Integrated Datasets</h2>
-    <table>
-        <tr>
-            <th>Dataset</th>
-            <th>Records</th>
-            <th>Key Contribution</th>
-        </tr>
-        <tr>
-            <td>OpenAlex</td>
-            <td>479M works</td>
-            <td>Broadest coverage, topics, FWCI</td>
-        </tr>
-        <tr>
-            <td>S2AG (Semantic Scholar)</td>
-            <td>231M papers</td>
-            <td>Citation context/intent, TLDRs</td>
-        </tr>
-        <tr>
-            <td>SciSciNet</td>
-            <td>159M papers</td>
-            <td>Disruption index, atypicality</td>
-        </tr>
-        <tr>
-            <td>Papers With Code</td>
-            <td>513K papers</td>
-            <td>Method-task-dataset-code links</td>
-        </tr>
-        <tr>
-            <td>Retraction Watch</td>
-            <td>69K records</td>
-            <td>Retraction flags + reasons</td>
-        </tr>
-        <tr>
-            <td>Reliance on Science</td>
-            <td>548K pairs</td>
-            <td>Patent-paper citation links</td>
-        </tr>
-        <tr>
-            <td>Preprint-to-Paper</td>
-            <td>146K pairs</td>
-            <td>Preprint &harr; published paper mapping</td>
-        </tr>
-        <tr>
-            <td>13 Ontologies</td>
-            <td>1.3M terms</td>
-            <td>CSO, MeSH, GO, DOID, ChEBI, and 8 more</td>
-        </tr>
-    </table>
+<!-- Key Features -->
+<section>
+    <div class="container">
+        <h2>Key Features</h2>
+        <p class="section-lead">What makes the Science Data Lake different from using individual sources.</p>
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F517;</div>
+                <h3>Cross-Source Record Linkage</h3>
+                <p>293M papers linked across 8 sources via DOI normalization. Compare citation counts, disruption scores, and retraction status in a single query.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F9EC;</div>
+                <h3>13 Scientific Ontologies</h3>
+                <p>1.3M terms from MeSH, GO, ChEBI, CSO, and 9 more &mdash; all linked to OpenAlex's 4,516 topics via embedding-based alignment (99.8% coverage).</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4BE;</div>
+                <h3>Views-over-Parquet</h3>
+                <p>~960 GB of Parquet files, a 500 KB DuckDB file with 151 views. Fully portable: mount the drive, regenerate views, query. No ETL server needed.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F504;</div>
+                <h3>Reproducible Pipeline</h3>
+                <p>One CLI command downloads, converts, links, and materializes everything. Idempotent updates &mdash; refresh any source to its latest snapshot.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F916;</div>
+                <h3>LLM-Ready Documentation</h3>
+                <p>SCHEMA.md provides every table, column, type, join strategy, and performance tier. Point your AI coding agent at it and query in natural language.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F30D;</div>
+                <h3>Remote Access via HuggingFace</h3>
+                <p>Query Parquet files directly from HuggingFace using DuckDB's <code>hf://</code> protocol &mdash; no download required.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <h2>Access</h2>
-    <ul>
-        <li><a href="https://huggingface.co/datasets/J0nasW/science-datalake">HuggingFace Dataset</a> — Browse, query
-            via SQL Console, or download</li>
-        <li><a href="https://huggingface.co/spaces/J0nasW/science-datalake-explorer">Interactive Demo</a> — Run SQL
-            queries in your browser</li>
-        <li><a href="https://github.com/J0nasW/science-datalake">GitHub Repository</a> — Full ETL pipeline to build your
-            own instance</li>
-        <li><a href="https://doi.org/10.57967/hf/7850">HuggingFace DOI</a> — Citable dataset record</li>
-    </ul>
+<!-- Integrated Datasets -->
+<section>
+    <div class="container">
+        <h2>Integrated Datasets</h2>
+        <p class="section-lead">Eight complementary scholarly data sources, each contributing unique metadata facets.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Dataset</th>
+                    <th>Records</th>
+                    <th>License</th>
+                    <th>Key Contribution</th>
+                    <th>Snapshot</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>OpenAlex</strong></td>
+                    <td>479M works</td>
+                    <td><span class="license-tag license-cc0">CC0</span></td>
+                    <td>Broadest coverage, FWCI, 4-level topic hierarchy, funding awards</td>
+                    <td>2026-02</td>
+                </tr>
+                <tr>
+                    <td><strong>S2AG</strong> (Semantic Scholar)</td>
+                    <td>231M papers</td>
+                    <td><span class="license-tag license-open">ODC-BY</span></td>
+                    <td>Citation context sentences, influential citations, 70M TLDRs, 12M full texts</td>
+                    <td>2025-12</td>
+                </tr>
+                <tr>
+                    <td><strong>SciSciNet</strong> v2</td>
+                    <td>250M papers</td>
+                    <td><span class="license-tag license-ccby">CC BY 4.0</span></td>
+                    <td>Disruption index, atypicality, sleeping beauty, team size</td>
+                    <td>2024-11</td>
+                </tr>
+                <tr>
+                    <td><strong>Papers With Code</strong></td>
+                    <td>513K papers</td>
+                    <td><span class="license-tag license-ccbysa">CC BY-SA 4.0</span></td>
+                    <td>Method-task-dataset-code mappings, GitHub repos</td>
+                    <td>2025-07</td>
+                </tr>
+                <tr>
+                    <td><strong>Retraction Watch</strong></td>
+                    <td>69K records</td>
+                    <td><span class="license-tag license-open">Open</span></td>
+                    <td>Retraction flags, reasons, and dates</td>
+                    <td>2025-02</td>
+                </tr>
+                <tr>
+                    <td><strong>Reliance on Science</strong></td>
+                    <td>47.8M pairs</td>
+                    <td><span class="license-tag license-ccbync">CC BY-NC 4.0</span></td>
+                    <td>Global patent-to-paper citation pairs</td>
+                    <td>v64</td>
+                </tr>
+                <tr>
+                    <td><strong>Preprint-to-Paper</strong></td>
+                    <td>146K pairs</td>
+                    <td><span class="license-tag license-open">Open</span></td>
+                    <td>bioRxiv/medRxiv preprint &rarr; published paper mapping</td>
+                    <td>2025-06</td>
+                </tr>
+                <tr>
+                    <td><strong>13 Ontologies</strong></td>
+                    <td>1.3M terms</td>
+                    <td><span class="license-tag license-open">Various</span></td>
+                    <td>MeSH, GO, ChEBI, NCIT, CSO, DOID, HPO, EDAM, AGROVOC, UNESCO, STW, MSC2020, PhySH</td>
+                    <td>2026-02</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 
-    <h2>Quick Start</h2>
-    <pre><code>import duckdb
+<!-- Architecture -->
+<section>
+    <div class="container">
+        <h2>Architecture</h2>
+        <p class="section-lead">A lightweight DuckDB database defines 151 SQL views pointing to Parquet files. No data is copied into the database &mdash; only view definitions.</p>
+        <div class="arch-box">
+<span class="hl">datalake.duckdb</span> <span class="dim">(500 KB, view definitions only)</span>
+  ├── <span class="hl">s2ag.*</span>          <span class="dim">→ datasets/s2ag/parquet/**/*.parquet</span>          <span class="gr">(437 GB)</span>
+  ├── <span class="hl">openalex.*</span>      <span class="dim">→ datasets/openalex/parquet/**/*.parquet</span>      <span class="gr">(262 GB)</span>
+  ├── <span class="hl">sciscinet.*</span>     <span class="dim">→ datasets/sciscinet/{core,large}/*.parquet</span>   <span class="gr">(151 GB)</span>
+  ├── <span class="hl">pwc.*</span>           <span class="dim">→ datasets/paperswithcode/parquet/*.parquet</span>   <span class="gr">(6.2 GB)</span>
+  ├── <span class="hl">retwatch.*</span>      <span class="dim">→ datasets/retractionwatch/parquet/*.parquet</span>  <span class="gr">(70 MB)</span>
+  ├── <span class="hl">ros.*</span>           <span class="dim">→ datasets/reliance_on_science/parquet/*.parquet</span> <span class="gr">(2.7 GB)</span>
+  ├── <span class="hl">p2p.*</span>           <span class="dim">→ datasets/preprint_to_paper/parquet/*.parquet</span> <span class="gr">(735 MB)</span>
+  ├── <span class="hl">{ont}.*</span>         <span class="dim">→ datasets/{ont}/parquet/*.parquet</span>            <span class="gr">(56 MB)</span>
+  ├── <span class="hl">xref.doi_map</span>    <span class="dim">→ UNION ALL across datasets (normalized DOIs)</span> <span class="gr">(588M rows)</span>
+  └── <span class="hl">xref.unified_papers</span> <span class="dim">→ Materialized cross-source join</span>         <span class="gr">(293M rows)</span>
+        </div>
+    </div>
+</section>
+
+<!-- Figures: Source Coverage -->
+<section>
+    <div class="container">
+        <h2>Source Coverage &amp; Overlap</h2>
+        <p class="section-lead">The 293M-row <code>unified_papers</code> table links papers across all sources via DOI normalization. OpenAlex provides 99.7% coverage; SciSciNet and S2AG each cover ~50%.</p>
+
+        <div class="figures-grid">
+            <figure class="figure">
+                <img src="fig2_upset_source_overlap.png" alt="UpSet plot of source overlap" loading="lazy">
+                <figcaption><strong>Figure 1.</strong> UpSet plot showing intersection structure across six data sources. Of 34 observed combinations, the three-way overlap of OpenAlex + SciSciNet + S2AG accounts for the largest multi-source intersection (38.2%).</figcaption>
+            </figure>
+            <figure class="figure">
+                <img src="fig3_temporal_ridgeline.png" alt="Temporal coverage by source" loading="lazy">
+                <figcaption><strong>Figure 2.</strong> Temporal coverage by source. Publication-year distributions reveal structural differences: OpenAlex extends back centuries, S2AG concentrates on recent decades, and SciSciNet metrics end around 2022.</figcaption>
+            </figure>
+        </div>
+    </div>
+</section>
+
+<!-- Figures: Ontology Alignment -->
+<section>
+    <div class="container">
+        <h2>Embedding-Based Ontology Alignment</h2>
+        <p class="section-lead">OpenAlex's 4,516 topics are mapped to 13 scientific ontologies using BGE-large-en-v1.5 embeddings + FAISS nearest-neighbour search, covering 99.8% of topics with 16,150 mappings. This is a 17&times; improvement over string-matching baselines.</p>
+
+        <div class="figures-grid">
+            <figure class="figure">
+                <img src="fig4_umap_embedding_space.png" alt="UMAP embedding space" loading="lazy">
+                <figcaption><strong>Figure 3.</strong> UMAP projection of BGE-large embeddings for OpenAlex topics (points) and matched ontology terms (crosses), colored by OpenAlex domain. Semantic clusters emerge naturally, with domain-specific ontology terms co-locating with their corresponding topics.</figcaption>
+            </figure>
+            <figure class="figure">
+                <img src="fig5_ontology_reach_heatmap.png" alt="Ontology reach heatmap" loading="lazy">
+                <figcaption><strong>Figure 4.</strong> Ontology reach heatmap showing high-quality mappings (similarity &ge; 0.85) between each ontology and each OpenAlex domain. Different ontologies specialize in different scientific areas: MeSH dominates health sciences, CSO covers computer science, GO spans molecular biology.</figcaption>
+            </figure>
+        </div>
+
+        <table style="max-width: 500px; margin-top: 1.5rem;">
+            <thead>
+                <tr><th>Quality Tier</th><th>Similarity</th><th>Mappings</th><th>Topics Covered</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Exact match</td><td>&ge; 0.95</td><td>85</td><td>71 (1.6%)</td></tr>
+                <tr><td>High quality</td><td>&ge; 0.85</td><td>2,527</td><td>1,647 (36.5%)</td></tr>
+                <tr><td>All</td><td>&ge; 0.65</td><td>16,150</td><td>4,509 (99.8%)</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Technical Validation -->
+<section>
+    <div class="container">
+        <h2>Technical Validation</h2>
+        <p class="section-lead">10 automated sanity checks, cross-source citation correlation analysis, and manual ontology mapping inspection.</p>
+
+        <figure class="figure" style="max-width: 700px;">
+            <img src="fig1_citation_bland_altman.png" alt="Bland-Altman citation agreement" loading="lazy">
+            <figcaption><strong>Figure 5.</strong> Bland&ndash;Altman plot of citation count agreement between Semantic Scholar (S2AG) and OpenAlex. Pairwise correlations across 121M papers: S2AG&ndash;OpenAlex <em>r</em> = 0.76, S2AG&ndash;SciSciNet <em>r</em> = 0.87, OpenAlex&ndash;SciSciNet <em>r</em> = 0.86.</figcaption>
+        </figure>
+
+        <figure class="figure" style="margin-top: 1.5rem;">
+            <img src="fig6_vignette_composite.png" alt="Vignette results" loading="lazy">
+            <figcaption><strong>Figure 6.</strong> Composite results from four usage vignettes. Top-left: disruption distributions for papers with vs. without code. Top-right: retraction enrichment by ontology domain. Bottom-left: citation distributions for patent-cited vs. non-patent-cited papers. Bottom-right: pairwise citation agreement across three sources.</figcaption>
+        </figure>
+    </div>
+</section>
+
+<!-- Quick Start -->
+<section>
+    <div class="container">
+        <h2>Quick Start</h2>
+        <p class="section-lead">Query directly from HuggingFace &mdash; no download required.</p>
+        <pre><code><span class="code-keyword">import</span> duckdb
+
 con = duckdb.connect()
-con.execute("INSTALL httpfs; LOAD httpfs;")
+con.execute(<span class="code-string">"INSTALL httpfs; LOAD httpfs;"</span>)
 
-df = con.execute("""
+<span class="code-comment"># Top 100 most disruptive papers</span>
+df = con.execute(<span class="code-string">"""
     SELECT doi, title, year, sciscinet_disruption, oa_cited_by_count
     FROM 'hf://datasets/J0nasW/science-datalake/xref/unified_papers/*.parquet'
     WHERE sciscinet_disruption IS NOT NULL
     ORDER BY sciscinet_disruption DESC
     LIMIT 100
-""").df()</code></pre>
+"""</span>).df()</code></pre>
 
-    <h2>Citation</h2>
-    <pre><code>@dataset{wilinski2026sciencedatalake,
-  title={Science Data Lake: A Unified, Portable Data Lake for Full-Lifecycle Scholarly Analysis},
-  author={Wilinski, Jonas},
-  year={2026},
-  publisher={HuggingFace},
-  url={https://huggingface.co/datasets/J0nasW/science-datalake}
+        <h3 style="margin-top: 2rem; margin-bottom: 0.75rem;">Build the Full Instance Locally</h3>
+        <pre><code><span class="code-comment"># Clone and run the pipeline</span>
+git clone https://github.com/J0nasW/science-datalake
+<span class="code-keyword">cd</span> science-datalake
+python scripts/datalake_cli.py download --all
+python scripts/datalake_cli.py convert --all
+python scripts/create_unified_db.py
+python scripts/materialize_unified_papers.py
+
+<span class="code-comment"># Update any source to its latest snapshot</span>
+python scripts/datalake_cli.py update openalex</code></pre>
+    </div>
+</section>
+
+<!-- LLM Integration -->
+<section>
+    <div class="container">
+        <h2>LLM &amp; AI Agent Integration</h2>
+        <p class="section-lead">The data lake ships with <a href="https://github.com/J0nasW/science-datalake/blob/main/SCHEMA.md">SCHEMA.md</a> &mdash; a structured reference optimized for LLM-based coding agents.</p>
+        <div class="features" style="grid-template-columns: 1fr 1fr;">
+            <div>
+                <p>SCHEMA.md contains:</p>
+                <ul style="margin: 0.75rem 0; padding-left: 1.25rem; color: var(--gray-600); font-size: 0.92rem; line-height: 1.8;">
+                    <li>Every table, column, type, and row count</li>
+                    <li>9 cross-dataset join strategies with SQL examples</li>
+                    <li>DOI format normalization patterns</li>
+                    <li>Performance tiers (S/M/L/VL) for query planning</li>
+                    <li>7 common task recipes</li>
+                </ul>
+            </div>
+            <div>
+                <pre style="font-size: 0.82rem;"><code><span class="code-comment"># Example prompt for an AI agent:</span>
+<span class="code-string">"Using the schema in SCHEMA.md,
+ write a query that finds the
+ top 20 most disruptive papers
+ in computer science that have
+ open-source code on GitHub,
+ including their retraction
+ status."</span></code></pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Citation -->
+<section>
+    <div class="container">
+        <h2>Citation</h2>
+        <pre><code>@dataset{wilinski2026sciencedatalake,
+  title   = {Science Data Lake: A Unified, Portable Data Lake
+             for Full-Lifecycle Scholarly Analysis},
+  author  = {Wilinski, Jonas},
+  year    = {2026},
+  publisher = {HuggingFace},
+  url     = {https://huggingface.co/datasets/J0nasW/science-datalake},
+  doi     = {10.57967/hf/7850}
 }</code></pre>
-</body>
+    </div>
+</section>
 
+<!-- Footer -->
+<footer>
+    <p>
+        Science Data Lake &copy; 2026 <a href="https://wilinski.me">Jonas Wilinski</a> &nbsp;|&nbsp;
+        <a href="https://github.com/J0nasW/science-datalake">GitHub</a> &nbsp;|&nbsp;
+        <a href="https://huggingface.co/datasets/J0nasW/science-datalake">HuggingFace</a> &nbsp;|&nbsp;
+        <a href="https://doi.org/10.57967/hf/7850">DOI: 10.57967/hf/7850</a> &nbsp;|&nbsp;
+        <a href="https://x.com/Jonas_H_W">@Jonas_H_W</a>
+    </p>
+</footer>
+
+</body>
 </html>

@@ -1,6 +1,20 @@
+<p align="center">
+  <img src="sdl_banner.jpg" alt="Science Data Lake" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://huggingface.co/datasets/J0nasW/science-datalake"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20HuggingFace-Dataset-yellow" alt="HuggingFace Dataset"></a>
+  <a href="https://doi.org/10.57967/hf/7850"><img src="https://img.shields.io/badge/DOI-10.57967%2Fhf%2F7850-blue" alt="DOI"></a>
+  <a href="https://github.com/J0nasW/science-datalake/blob/main/LICENSE"><img src="https://img.shields.io/badge/Code%20License-MIT-green" alt="License: MIT"></a>
+  <a href="https://github.com/J0nasW/science-datalake/blob/main/SCHEMA.md"><img src="https://img.shields.io/badge/LLM--Ready-SCHEMA.md-purple" alt="LLM-Ready"></a>
+  <a href="https://x.com/Jonas_H_W"><img src="https://img.shields.io/badge/Follow-%40Jonas__H__W-black?logo=x" alt="Follow on X"></a>
+</p>
+
 # Science Data Lake
 
 Portable data lake of 480M+ scientific publications from eight complementary datasets, plus 13 scientific ontologies (1.3M terms), queryable via DuckDB.
+
+**Links:** [HuggingFace Dataset](https://huggingface.co/datasets/J0nasW/science-datalake) | [DOI: 10.57967/hf/7850](https://doi.org/10.57967/hf/7850) | [SCHEMA.md (LLM reference)](SCHEMA.md) | [Author website](https://wilinski.me)
 
 ## What This Is
 

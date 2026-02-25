@@ -5,17 +5,24 @@ The advent of large-scale datasets tracing the workings of science has cultivate
 a rapidly expanding ``science of science'' with its own data infrastructure,
 metrics, and analytical frameworks~\cite{liu2023science}. Yet the databases that
 underpin this field remain fragmented: Semantic Scholar provides influential
-citation flags and open-access metadata~\cite{kinney2023s2ag}; OpenAlex offers
-field-weighted citation impact (FWCI) and a hierarchical topic
-taxonomy~\cite{priem2022openalex}; SciSciNet contributes disruption indices and
-atypicality scores~\cite{lin2023sciscinet}; Papers with Code links papers to
-reproducible code~\cite{paperswithcode2024}; Retraction Watch tracks integrity
+citation flags, open-access metadata, and full-text coverage for millions of
+papers~\cite{kinney2023s2ag}; OpenAlex---the most comprehensive open index to
+date---offers field-weighted citation impact (FWCI), a four-level topic taxonomy
+with 4,516~leaf topics, geocoded institution affiliations for 121\,K
+institutions, and 11.7~million funding awards with dollar amounts, all under a
+CC0 license~\cite{priem2022openalex}; SciSciNet contributes a landmark
+collection of pre-computed science-of-science metrics including disruption
+indices, atypicality scores, and patent linkages~\cite{lin2023sciscinet}; Papers
+with Code links papers to reproducible code, though the platform has ceased
+active operations, making its archived snapshot a non-renewable
+resource~\cite{paperswithcode2024}; Retraction Watch tracks integrity
 events~\cite{retractionwatch2024}; and Reliance on Science maps patent-to-paper
-citations~\cite{marx2020ros}. No single source captures all of these facets.
-Researchers who wish to study, for example, whether disruptive papers are more
-likely to release code, or whether retracted papers show anomalous citation
-patterns across databases, must write ad-hoc integration scripts that are rarely
-shared or reproduced.
+citations~\cite{marx2020ros}. Each of these sources represents a substantial
+achievement in opening the scientific record; however, no single source captures
+all facets simultaneously. Researchers who wish to combine them---for example, to
+study whether disruptive papers are more likely to release code, or whether
+retracted papers show anomalous citation patterns across databases---must write
+ad-hoc integration scripts that are rarely shared or reproduced.
 
 A systematic evaluation of 59 scholarly databases found substantial variation in
 backward and forward citation coverage~\cite{gusenbauer2024citation}. Large-scale
@@ -46,25 +53,34 @@ reproducibility.
 \centering
 \caption{Comparison with existing scholarly data integration systems.}
 \label{tab:comparison}
-\small
-\begin{tabularx}{\textwidth}{@{}l c c c c X@{}}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{@{} l c c c c X @{}}
 \toprule
-\textbf{System} & \textbf{Sources} & \textbf{Multi-source} & \textbf{Source schemas} & \textbf{Open} & \textbf{Key limitation} \\
+\textbf{System} & \textbf{Src} & \textbf{Multi} & \textbf{Schemas} & \textbf{Open} & \textbf{Key limitation} \\
 \midrule
-SciSciNet~\cite{lin2023sciscinet}        & 1+ & \texttimes & --- & \checkmark & Single bibliometric index \\
-PubGraph~\cite{ahrabian2023pubgraph}     & 3 & \checkmark & Merged & \checkmark & Loses source-level detail \\
-SemOpenAlex~\cite{farber2023semopenalex} & 1 & \texttimes & --- & \checkmark & Single source (OpenAlex) \\
-Dimensions~\cite{hook2018dimensions}     & 1 & \texttimes & --- & Partial & Commercial, limited access \\
-\textbf{Science Data Lake (ours)}        & \textbf{8} & \checkmark & \textbf{Preserved} & \checkmark & Requires local storage \\
+SciSciNet~\cite{lin2023sciscinet}        & 1+ & \texttimes & ---      & \checkmark & Single bibliometric backbone (MAG/OpenAlex); no independent cross-source comparison \\[2pt]
+PubGraph~\cite{ahrabian2023pubgraph}     & 3  & \checkmark & Merged   & \checkmark & Collapses into unified Wikidata schema; source-level provenance lost \\[2pt]
+SemOpenAlex~\cite{farber2023semopenalex} & 1  & \texttimes & ---      & \checkmark & Single source (OpenAlex only); requires SPARQL expertise \\[2pt]
+Dimensions~\cite{hook2018dimensions}     & 1  & \texttimes & ---      & \texttildelow & Commercial; limited programmatic access; not fully reproducible \\[2pt]
+\textbf{Science Data Lake}               & \textbf{8} & \checkmark & \textbf{Preserved} & \checkmark & Requires {\raise.17ex\hbox{$\scriptstyle\sim$}}1\,TB local storage; snapshot-based \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The Science Data Lake addresses these limitations through three contributions.
-\textbf{First}, a \emph{multi-source preserving architecture} that integrates
-eight open scholarly databases into a single DuckDB-queryable resource while
+Rather than attempting to replace these individually excellent resources, the
+Science Data Lake provides an open infrastructure foundation for
+science-of-science research---analogous to what
+SciSciNet~\cite{lin2023sciscinet} achieved for single-source metrics, but
+extended across eight independent data sources. The resource makes three
+contributions. \textbf{First}, a \emph{multi-source preserving architecture}
+that integrates eight open scholarly databases into a single resource while
 retaining each source's native schema, enabling direct cross-source comparison at
-the record level. \textbf{Second}, an \emph{embedding-based ontology alignment}
+the record level. Because upstream sources---particularly OpenAlex---evolve their
+schema across snapshot partitions, the conversion pipeline employs dynamic Python
+scripts that auto-discover entity types and column structures rather than relying
+on hard-coded schemas, ensuring the infrastructure remains current as sources
+change. \textbf{Second}, an \emph{embedding-based ontology alignment}
 method that bridges OpenAlex's flat topic taxonomy to 13~formal scientific
 ontologies using BGE-large sentence embeddings~\cite{xiao2024bge}, achieving a
 17-fold improvement over string-matching baselines. \textbf{Third}, a

@@ -298,7 +298,7 @@ def fig2_upset_source_overlap(con):
 # ═══════════════════════════════════════════════════════════════════════════
 
 def fig3_temporal_ridgeline(con):
-    """Ridgeline plot: publication-year distribution per source."""
+    """Small-multiples temporal coverage: one subplot per source with own y-axis."""
 
     df = con.execute("""
         SELECT year,
@@ -315,49 +315,76 @@ def fig3_temporal_ridgeline(con):
 
     sources = ["OpenAlex", "S2AG", "SciSciNet", "PWC", "RetWatch"]
     colors = [SOURCE_COLORS[s] for s in sources]
-
-    fig, ax = plt.subplots(figsize=(DOUBLE_COL, 3.8))
-
-    spacing = 1.0  # vertical spacing between ridges
     years = df["year"].values
 
-    for i, (src, color) in enumerate(zip(sources, colors)):
-        counts = df[src].values.astype(float)
-        # Normalize to peak = 1 for shape comparison
-        peak = counts.max()
-        if peak > 0:
-            normed = counts / peak
+    fig, axes = plt.subplots(len(sources), 1, figsize=(DOUBLE_COL, 4.8),
+                             sharex=True)
+
+    def _log_fmt(x, _):
+        """Compact log-scale formatter: 1, 10, 100, 1K, 10K, 100K, 1M, 10M."""
+        if x <= 0:
+            return ""
+        if x >= 1e6:
+            return f"{x/1e6:g}M"
+        if x >= 1e3:
+            return f"{x/1e3:g}K"
+        return f"{x:g}"
+
+    # Compute shared limits: first 3 (large) and last 2 (specialized)
+    all_counts = {src: df[src].values.astype(float) for src in sources}
+    large_peak = max(all_counts[s].max() for s in sources[:3])
+    small_peak = max(all_counts[s].max() for s in sources[3:])
+    large_thresh = max(10, large_peak * 0.005)
+    small_thresh = max(10, small_peak * 0.005)
+
+    def _yfmt(x, _):
+        if x <= 0:
+            return ""
+        if x >= 1e6:
+            return f"{x/1e6:g}M"
+        if x >= 1e3:
+            return f"{x/1e3:g}K"
+        return f"{x:g}"
+
+    for i, (src, color, ax) in enumerate(zip(sources, colors, axes)):
+        counts = all_counts[src]
+
+        # Synced scales: same symlog params within each group
+        if i < 3:
+            linthresh, ylim_top = large_thresh, large_peak * 1.3
         else:
-            normed = counts
-        y_offset = (len(sources) - 1 - i) * spacing
-        ax.fill_between(years, y_offset, y_offset + normed * 0.85,
-                        color=color, alpha=0.6, lw=0)
-        ax.plot(years, y_offset + normed * 0.85,
-                color=color, lw=0.8, alpha=0.9)
+            linthresh, ylim_top = small_thresh, small_peak * 1.3
 
-        # Label on the left
-        ax.text(1895, y_offset + 0.35, src, fontsize=8, fontweight="bold",
-                color=color, ha="right", va="center")
+        ax.set_yscale("symlog", linthresh=linthresh)
+        ax.fill_between(years, 0, counts, color=color, alpha=0.35, lw=0)
+        ax.plot(years, counts, color=color, lw=0.9, alpha=0.9)
+        ax.set_ylim(0, ylim_top)
+        ax.yaxis.set_major_formatter(ticker.FuncFormatter(_yfmt))
+        ax.yaxis.set_minor_formatter(ticker.NullFormatter())
 
-        # Total count annotation on the right
-        total = df[src].sum()
-        if total >= 1e6:
-            label = f"{total/1e6:.0f}M"
-        else:
-            label = f"{total/1e3:.0f}K"
-        ax.text(2027, y_offset + 0.35, label, fontsize=7,
-                color=color, ha="left", va="center")
+        # Source label inside the panel
+        ax.text(0.01, 0.88, src, transform=ax.transAxes,
+                fontsize=7.5, fontweight="bold", color=color, va="top")
 
-    ax.set_xlim(1900, 2025)
-    ax.set_ylim(-0.15, len(sources) * spacing + 0.2)
-    ax.set_xlabel("Publication year")
-    ax.set_yticks([])
-    ax.spines["left"].set_visible(False)
+        # Light decade gridlines
+        for decade in range(1920, 2030, 20):
+            ax.axvline(decade, color="#e0e0e0", lw=0.3, zorder=0)
 
-    # Light vertical gridlines at decades
-    for decade in range(1900, 2030, 20):
-        ax.axvline(decade, color="#cccccc", lw=0.3, zorder=0)
+        # Clean spines
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.tick_params(axis="y", labelsize=6, length=2, pad=2)
 
+        # Only bottom subplot gets x-axis label
+        if i < len(sources) - 1:
+            ax.tick_params(axis="x", labelbottom=False, length=0)
+            ax.spines["bottom"].set_visible(False)
+
+    axes[-1].set_xlim(1900, 2025)
+    axes[-1].set_xlabel("Publication year")
+
+    fig.align_ylabels(axes)
+    fig.subplots_adjust(hspace=0.12)
     fig.tight_layout()
     save_fig(fig, "fig3_temporal_ridgeline")
 

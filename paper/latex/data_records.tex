@@ -6,11 +6,16 @@ The Science Data Lake is hosted on HuggingFace Datasets
 DOI: \texttt{10.57967/hf/7850}), which provides a persistent
 DataCite DOI for citation. Remote users can query the Parquet files directly
 through DuckDB's \texttt{hf://} protocol without downloading the full dataset.
+Due to licensing restrictions, the HuggingFace-hosted version does not include
+Semantic Scholar (ODC-BY, non-commercial research use) or Reliance on Science
+(CC~BY-NC~4.0). Both sources can be obtained locally using the provided download
+scripts and a free Semantic Scholar API key; once downloaded, the pipeline
+automatically integrates them into the unified schema.
 
-The dataset comprises approximately 960\,GB of compressed Apache Parquet files
-organized into 22~schema directories, each containing one or more Parquet files
-corresponding to the tables of that schema. The lightweight DuckDB database file
-({\raise.17ex\hbox{$\scriptstyle\sim$}}500\,KB) defines 151~SQL views that
+The full dataset comprises approximately 960\,GB of compressed Apache Parquet
+files organized into 22~schema directories, each containing one or more Parquet
+files corresponding to the tables of that schema. The lightweight DuckDB database
+file ({\raise.17ex\hbox{$\scriptstyle\sim$}}270\,KB) defines 151~SQL views that
 reference these Parquet files and can be regenerated from source using the
 provided pipeline scripts.
 

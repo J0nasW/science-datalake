@@ -9,7 +9,8 @@
     draw=sourceblue!70, fill=sourceblue!8, font=\small\sffamily,
     text=black, line width=0.5pt, align=center
   },
-  countlabel/.style={font=\scriptsize\sffamily\color{gray!70!black}, anchor=west},
+  countlabel/.style={font=\scriptsize\sffamily\color{gray!70!black}, anchor=west,
+    fill=white, inner sep=1.5pt, rounded corners=1pt},
   parquetnode/.style={
     rectangle, rounded corners=3pt, minimum width=2.4cm, minimum height=2.0cm,
     draw=parquetgray!70, fill=parquetgray!6, font=\small\sffamily\bfseries,
@@ -52,15 +53,6 @@
 \node[source] (p2p)     at (0,-6.0)  {Preprint-to-Published};
 \node[source] (xrefsrc) at (0,-7.0)  {Crossref};
 
-% Record counts (anchored left, positioned outside the source group frame)
-\node[countlabel] at (2.0, 0.2)    {231M};
-\node[countlabel] at (2.0,-0.7)  {479M};
-\node[countlabel] at (2.0,-1.7)  {250M};
-\node[countlabel] at (2.0,-2.7)  {513K};
-\node[countlabel] at (2.0,-3.7)  {69K};
-\node[countlabel] at (2.0,-4.7)  {47.8M};
-\node[countlabel] at (2.0,-5.7)  {146K};
-
 % Source group label
 \node[grouplabel=sourceblue, anchor=south] at (0, 0.7) {Data Sources};
 
@@ -78,6 +70,16 @@
   \draw[myarrow=parquetgray] (\src.east) -- (3.5, 0 |- \src.east);
 }
 
+% Record counts (drawn AFTER arrows so white bg covers them)
+\node[countlabel] at (2.1, 0.0)    {231M};
+\node[countlabel] at (2.1,-1.0)  {479M};
+\node[countlabel] at (2.1,-2.0)  {250M};
+\node[countlabel] at (2.1,-3.0)  {513K};
+\node[countlabel] at (2.1,-4.0)  {69K};
+\node[countlabel] at (2.1,-5.0)  {47.8M};
+\node[countlabel] at (2.1,-6.0)  {146K};
+\node[countlabel] at (2.1,-7.0)  {meta};
+
 % Parquet node (centered on the bus vertically)
 \node[parquetnode] (pq) at (5, -3.5)
   {Parquet\\[2pt]\normalfont\scriptsize{\raise.17ex\hbox{$\scriptstyle\sim$}}960\,GB};
@@ -93,14 +95,14 @@
 \node[grouplabel=duckdbyellow, anchor=south] at (10.0, 1.0)
   {DuckDB (22 schemas, 151 views)};
 \node[note, anchor=north] at (10.0, 0.9)
-  {view-only DB {\raise.17ex\hbox{$\scriptstyle\sim$}}500\,KB};
+  {view-only DB {\raise.17ex\hbox{$\scriptstyle\sim$}}270\,KB};
 
 % Source schema nodes (starting at y=0, spaced at 0.80)
 \node[schemanode] (ds1) at (10.0, 0.0)  {s2ag.*};
 \node[schemanode] (ds2) at (10.0,-0.80) {openalex.*};
 \node[schemanode] (ds3) at (10.0,-1.60) {sciscinet.*};
 \node[schemanode] (ds4) at (10.0,-2.40) {pwc.*, retwatch.*};
-\node[note]       at (10.0,-3.10)       {\textit{+ ros, p2p, main}};
+\node[note]       at (10.0,-2.90)       {\textit{+ ros, p2p, main}};
 
 % ============================================================
 % COLUMN 3 lower: xref Schema (x=10.0, starting at y=-4.5)
@@ -165,9 +167,8 @@
   ([xshift=6pt]ds4.south) -- ++(0,-0.55) -| ([xshift=-4pt]unified.north);
 
 % topic_ontology_map → ontologies
-\draw[thickarrow=ontopurple] (tomap.east) -- ++(1.2,0)
-  node[above, note, pos=0.4] {BGE-large}
-  node[below, note, pos=0.4] {embeddings} |- (ontology.west);
+\draw[thickarrow=ontopurple] (tomap.east) -- ++(1.2,0) |- (ontology.west);
+\node[note, anchor=north] at (12.7, -6.5) {embeddings};
 
 
 \end{tikzpicture}%

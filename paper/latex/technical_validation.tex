@@ -22,7 +22,7 @@ violations across the full dataset.}
 5  & Ontology map: no orphan topic IDs & PASS & 0 orphan topic\_ids \\
 6  & RoS to OpenAlex join (10K sample) & PASS & 86\% match rate \\
 7  & Citation cross-source correlation & PASS & $r = 0.76$--$0.87$ pairwise \\
-8  & Year distribution (NULL/invalid) & PASS & NULL: 0.53\%, invalid: 0.002\% \\
+8  & Year distribution (NULL/invalid) & PASS & NULL: 0.53\%, invalid: 0.001\% \\
 9  & Spot-check known papers & PASS & Wakefield retraction flags correct \\
 10 & Vignette count reproducibility & PASS & All 4 counts match exactly \\
 \bottomrule
@@ -52,7 +52,7 @@ pairwise Pearson correlations for papers present in all three large sources
 (S2AG, OpenAlex, SciSciNet; $n \approx 121$M). The correlations are:
 S2AG--OpenAlex $r = 0.76$, S2AG--SciSciNet $r = 0.87$, and
 OpenAlex--SciSciNet $r = 0.86$. The mean absolute differences are 4.14
-(S2AG--OA), 2.31 (S2AG--SSN), and 3.42 (OA--SSN) citations.
+(S2AG--OA), 3.84 (S2AG--SSN), and 2.30 (OA--SSN) citations.
 
 Figure~\ref{fig:blandaltman} presents the Bland--Altman analysis of citation
 agreement between S2AG and OpenAlex. The plot reveals that disagreement

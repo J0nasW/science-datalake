@@ -13,18 +13,18 @@ distinct metadata facets (Table~\ref{tab:sources}).
 versions used in this release.}
 \label{tab:sources}
 \small
-\begin{tabularx}{\textwidth}{@{}l r l l X@{}}
+\begin{tabularx}{\textwidth}{@{}l r l X@{}}
 \toprule
-\textbf{Source} & \textbf{Records} & \textbf{License} & \textbf{Version} & \textbf{Key content} \\
+\textbf{Source} & \textbf{Records} & \textbf{License} & \textbf{Key content} \\
 \midrule
-Semantic Scholar (S2AG)     & 231M  & ODC-BY   & 2024-09 & Citations, influential citations, open access \\
-OpenAlex                    & 479M  & CC0      & 2025-01 & FWCI, topics, types, languages \\
-SciSciNet                   & 250M  & CC BY    & v2      & Disruption, atypicality, team size \\
-Papers with Code            & 513K  & CC BY-SA & 2024-10 & Code repositories, tasks, datasets \\
-Retraction Watch            & 69K   & Open     & 2024-09 & Retraction reasons and dates \\
-Reliance on Science (RoS)   & 47.8M & CC BY-NC & v64     & Patent--paper citation pairs \\
-Preprint-to-Published (P2P) & 146K  & Open     & 2024    & bioRxiv/medRxiv DOI to published DOI \\
-Crossref                    & ---   & Open     & 2024    & DOI metadata, reference lists \\
+Semantic Scholar (S2AG)     & 231M  & ODC-BY   & Citations, influential citations, open access \\
+OpenAlex                    & 479M  & CC0      & FWCI, topics, types, languages, funding awards \\
+SciSciNet                   & 250M  & CC BY    & Disruption, atypicality, team size \\
+Papers with Code            & 513K  & CC BY-SA & Code repositories, tasks, datasets \\
+Retraction Watch            & 69K   & Open     & Retraction reasons and dates \\
+Reliance on Science (RoS)   & 47.8M & CC BY-NC & Patent--paper citation pairs \\
+Preprint-to-Published (P2P) & 146K  & Open     & bioRxiv/medRxiv DOI to published DOI \\
+Crossref                    & ---   & Open     & DOI metadata, reference lists \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -68,8 +68,14 @@ in recent decades with a computer-science emphasis, and SciSciNet metrics end ar
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig3_temporal_ridgeline.pdf}
-\caption{Temporal coverage by source. Publication-year distributions reveal
-structural differences in scope and recency across the eight integrated sources.}
+\caption{Temporal coverage by source (symlog scale). Publication-year distributions
+for DOI-linked records in the unified index (see Table~\ref{tab:sources} for full
+source sizes). The symlog y-axis is linear near zero and logarithmic above, revealing
+both historical depth and recent growth. OpenAlex, S2AG, and SciSciNet extend back to
+1900 with tens of thousands of papers per year, while all three show clear acceleration
+after $\sim$1960. SciSciNet exhibits a sharp cutoff after $\sim$2022 when its metrics
+computation ends. The specialized sources (PWC, Retraction Watch) cover narrow temporal
+windows concentrated in the last two decades.}
 \label{fig:temporal}
 \end{figure}
 
@@ -81,7 +87,7 @@ The Science Data Lake is built on a \emph{views-over-Parquet} architecture using
 DuckDB~\cite{raasveldt2019duckdb} (Figure~\ref{fig:architecture}). Each data source
 is first converted from its native format (JSON Lines, CSV, N-Triples) into columnar
 Apache Parquet files, totaling approximately 960\,GB on disk. A lightweight DuckDB
-database ({\raise.17ex\hbox{$\scriptstyle\sim$}}500\,KB) defines 151~SQL views
+database ({\raise.17ex\hbox{$\scriptstyle\sim$}}270\,KB) defines 151~SQL views
 organized into 22~schemas that reference these Parquet files without copying data.
 
 The schema design follows two principles. \textbf{Source-level preservation}: each
@@ -92,9 +98,16 @@ enabling direct inspection of how different databases represent the same paper.
 bridge across sources---\texttt{doi\_map} (DOI normalization), \texttt{unified\_papers}
 (293M-row join table), and \texttt{topic\_ontology\_map} (ontology alignment).
 
-The system supports dual-mode access: local deployment on an NVME drive for
-full-speed analytical queries, or remote access through HuggingFace-hosted Parquet
-files for users without local storage.
+We chose DuckDB over traditional server-based systems such as PostgreSQL for
+three reasons: its embeddable, serverless design requires no installation or
+administration; its columnar engine is optimized for the analytical (OLAP) query
+patterns typical of bibliometric research; and---crucially---it reads Parquet
+files directly through SQL views without importing data, keeping the database
+file under 300\,KB while exposing nearly 1\,TB of data.
+
+The system supports dual-mode access: local deployment on a high-capacity drive
+for full-speed analytical queries, or remote access through HuggingFace-hosted
+Parquet files for users without local storage.
 
 A reproducible pipeline orchestrated by a master CLI script (\texttt{datalake\_cli.py})
 automates the full workflow: downloading source snapshots, converting to Parquet,
@@ -188,12 +201,20 @@ that maps OpenAlex topics to 13~scientific ontologies comprising 1.3~million
 terms in total.
 
 The 13~ontologies span diverse scientific domains: Medical Subject Headings
-(MeSH; 721K terms), Chemical Entities of Biological Interest (ChEBI; 205K),
-NCI Thesaurus (NCIT; 204K), Gene Ontology (GO; 48K), AGROVOC (42K), Computer
-Science Ontology (CSO; 15K)~\cite{salatino2020cso}, Disease Ontology (DOID),
-Human Phenotype Ontology (HPO), EDAM bioinformatics ontology, UNESCO Thesaurus,
-Standard Thesaurus for Economics (STW), Physics Subject Headings (PhySH), and
-the Mathematics Subject Classification (MSC2020). Each ontology was converted
+(MeSH; 721K terms)~\cite{lipscomb2000mesh}, Chemical Entities of Biological
+Interest (ChEBI; 205K)~\cite{hastings2016chebi}, NCI Thesaurus (NCIT;
+204K)~\cite{sioutos2007ncit}, Gene Ontology (GO;
+48K)~\cite{go2021geneontology}, AGROVOC
+(42K)~\cite{caracciolo2013agrovoc}, Computer Science Ontology (CSO;
+15K)~\cite{salatino2020cso}, Disease Ontology
+(DOID)~\cite{schriml2022doid}, Human Phenotype Ontology
+(HPO)~\cite{kohler2021hpo}, EDAM bioinformatics
+ontology~\cite{ison2013edam}, UNESCO
+Thesaurus\footnote{\url{https://vocabularies.unesco.org/browser/thesaurus/en/}},
+Standard Thesaurus for Economics
+(STW)\footnote{\url{https://zbw.eu/stw/}}, Physics Subject Headings
+(PhySH)\footnote{\url{https://physh.org/}}, and the Mathematics Subject
+Classification (MSC2020)\footnote{\url{https://msc2020.org/}}. Each ontology was converted
 from its native format (OBO, SKOS/RDF, N-Triples, CSV) to a uniform Parquet
 representation using format-specific parsers, and simultaneously loaded into an
 Oxigraph RDF triple store for SPARQL queries.
@@ -201,14 +222,20 @@ Oxigraph RDF triple store for SPARQL queries.
 We employed a hybrid alignment strategy. For the 10~smaller ontologies (291K
 terms including synonyms), we computed dense embeddings using the BGE-large-en-v1.5
 model~\cite{xiao2024bge} (335M parameters, 1024 dimensions) and performed
-nearest-neighbour search via a FAISS index~\cite{johnson2021faiss} on an NVIDIA
-RTX A4500 GPU. For the three largest ontologies (MeSH, ChEBI, NCIT), which
+nearest-neighbour search via a FAISS index~\cite{johnson2021faiss}. For the three largest ontologies (MeSH, ChEBI, NCIT), which
 together account for 1.1M terms and would dominate the embedding space, we used
 exact string matching to ensure precision.
 
-Table~\ref{tab:ontology_tiers} summarizes the alignment quality. At a cosine
-similarity threshold of $\geq 0.85$, the method produces 2,527~mappings; relaxing
-to $\geq 0.65$ yields 16,150~mappings covering 4,509 of 4,516 topics (99.84\%).
+Table~\ref{tab:ontology_tiers} summarizes the alignment quality with
+representative examples for each tier. At the exact-match tier ($\geq 0.95$),
+topics align with near-identical ontology terms---for instance, the OpenAlex
+topic ``Machine Learning'' maps to CSO's ``machine learning'' (similarity
+0.98). At the high-quality tier ($\geq 0.85$), semantically related but
+differently named concepts are captured---e.g., ``Artificial Intelligence in
+Medicine'' maps to EDAM's ``Medical informatics'' (0.87). Relaxing to
+$\geq 0.65$ yields 16,150~mappings covering 4,509 of 4,516 topics (99.84\%),
+including broader associations such as ``Soil Chemistry'' mapping to
+AGROVOC's ``soil chemicophysical properties'' (0.68).
 
 \begin{table}[t]
 \centering

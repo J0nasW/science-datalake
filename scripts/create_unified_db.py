@@ -580,6 +580,37 @@ def create_xref_views(
         )
         views.append("xref.ontology_bridges")
 
+    # Temporal coverage metadata per source
+    conn.execute("""
+        CREATE VIEW xref.source_temporal_coverage AS
+        SELECT * FROM (VALUES
+            ('openalex',  1500, 2025, 'works',           'Broadest coverage; trails real-time by weeks to months'),
+            ('s2ag',      1900, 2025, 'papers',          'Concentrated in recent decades; CS emphasis'),
+            ('sciscinet', 1900, 2022, 'metrics',         'Disruption/atypicality metrics end ~2022'),
+            ('pwc',       2012, 2024, 'papers',          'ML papers with code; platform ceased active operations'),
+            ('retwatch',  1927, 2024, 'retracted_papers', 'Retraction events; ongoing curation'),
+            ('ros',       1947, 2023, 'patent_pairs',    'Patent-to-paper citations; patent processing lag'),
+            ('p2p',       2013, 2024, 'preprint_maps',   'bioRxiv/medRxiv preprint-to-published DOI mappings'),
+            ('crossref',  NULL, NULL, 'doi_metadata',    'DOI metadata and reference lists; no temporal bound')
+        ) AS t(source, year_min, year_max, coverage_type, note)
+    """)
+    views.append("xref.source_temporal_coverage")
+
+    # Per-paper temporal flags (requires unified_papers)
+    unified_dir = ROOT / "datasets" / "xref" / "unified_papers"
+    if unified_dir.exists() and list(unified_dir.glob("*.parquet")):
+        conn.execute("""
+            CREATE VIEW xref.paper_temporal_flags AS
+            SELECT
+                doi,
+                year,
+                (year > 2022 AND has_sciscinet) AS sciscinet_metrics_stale,
+                (year > 2023 AND has_patent)    AS ros_coverage_incomplete,
+                (year IS NULL)                  AS year_missing
+            FROM xref.unified_papers
+        """)
+        views.append("xref.paper_temporal_flags")
+
     return views
 
 

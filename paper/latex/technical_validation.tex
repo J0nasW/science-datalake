@@ -77,24 +77,68 @@ sources provide broadly consistent citation information, while the
 non-negligible disagreements (particularly S2AG--OA at $r = 0.76$) underscore
 the value of preserving all three counts for sensitivity analyses.
 
+We deliberately preserve all three independent citation counts rather than
+imposing a single resolved value. The six Boolean coverage flags
+(\texttt{has\_s2ag}, \texttt{has\_openalex}, \texttt{has\_sciscinet},
+\texttt{has\_pwc}, \texttt{has\_retraction}, \texttt{has\_patent}) serve as
+implicit conflict-detection indicators: papers present in fewer sources
+warrant additional caution when comparing citation-dependent metrics.
+Imposing automated conflict resolution would require editorial judgment
+about source reliability that may vary by field, era, and research
+question---choices we believe should remain with the analyst.
+
 \subsection{Ontology Alignment Validation}
 
-We validated the embedding-based ontology mappings at the high-quality tier
-(similarity $\geq 0.85$; 2,527~mappings). Manual inspection of the 97~most
-difficult cases---those near the 0.85 threshold boundary---found zero
+To quantify alignment quality beyond manual inspection, we drew a stratified
+sample of 300~mappings from the 16,150 total: 50 from the exact tier
+($\geq 0.95$), 100 from high-quality ($0.85$--$0.95$), 100 from mid-range
+($0.75$--$0.85$), and 50 from the borderline tier ($0.65$--$0.75$), with
+proportional representation of all 13~ontologies within each stratum. Each
+pair was independently labelled as \emph{correct} (semantically equivalent),
+\emph{partial} (meaningful relationship but not equivalent), or
+\emph{incorrect} (unrelated). We report precision at each tier and aggregate
+precision, recall, and F1 at the $\geq 0.65$ threshold. The same
+gold-standard set was used to evaluate three lexical baselines (TF-IDF, BM25,
+Jaro--Winkler; see Table~\ref{tab:baselines}).
+Figure~\ref{fig:precision_recall} shows the precision--recall trade-off
+across similarity thresholds for all four methods.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/fig_precision_recall.pdf}
+\caption{Precision--recall curves for the four ontology alignment methods,
+swept across cosine-similarity thresholds from 0.60 to 1.00. Annotated
+points mark key thresholds. The embedding-based method (BGE-large)
+dominates across all operating points.}
+\label{fig:precision_recall}
+\end{figure}
+
+Prior to the gold-standard evaluation, manual inspection of the 97~most
+difficult cases near the 0.85 threshold boundary had found zero
 semantically incorrect mappings. Typical borderline matches included
 legitimate cross-domain connections such as ``Bioelectronics'' (OpenAlex)
 $\to$ ``Biosensors'' (EDAM, similarity 0.856), which reflect meaningful
 semantic proximity rather than errors.
 
-\subsection{Known Limitations}
+\subsection{Temporal Coverage Guardrails}
 
 The temporal coverage of individual sources introduces caveats for
-longitudinal analyses. SciSciNet metrics are computed on data through
-approximately 2022, meaning disruption and atypicality scores may not
-reflect the most recent citation dynamics. Reliance on Science patent
-citations exhibit a natural lag due to patent processing timelines,
-with coverage strongest through late 2023. Users should verify the
-temporal coverage of each source before drawing conclusions about
-recent trends. The OpenAlex topic taxonomy may evolve across snapshots,
-potentially affecting ontology mapping stability.
+longitudinal analyses. To make these caveats programmatically accessible,
+the \texttt{xref} schema includes two auxiliary views.
+\texttt{xref.source\_temporal\_coverage} records the year range and
+coverage type of each source (e.g., SciSciNet metrics end at approximately
+2022, RoS patent citations are strongest through late 2023).
+\texttt{xref.paper\_temporal\_flags} provides per-paper Boolean flags:
+\texttt{sciscinet\_metrics\_stale} (true when a paper's year exceeds 2022
+and the paper has SciSciNet records), \texttt{ros\_coverage\_incomplete}
+(true when year exceeds 2023 and the paper has patent citations), and
+\texttt{year\_missing} (true when the publication year is NULL). Users can
+join these flags to any analysis query to restrict results to temporally
+reliable subsets---for instance, filtering out papers with stale disruption
+scores before computing field-level disruption trends.
+
+\subsection{Known Limitations}
+
+Users should verify the temporal coverage of each source before drawing
+conclusions about recent trends. The OpenAlex topic taxonomy may evolve
+across snapshots, potentially affecting ontology mapping stability.

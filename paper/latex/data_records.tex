@@ -15,7 +15,7 @@ automatically integrates them into the unified schema.
 The full dataset comprises approximately 960\,GB of compressed Apache Parquet
 files organized into 22~schema directories, each containing one or more Parquet
 files corresponding to the tables of that schema. The lightweight DuckDB database
-file ({\raise.17ex\hbox{$\scriptstyle\sim$}}270\,KB) defines 151~SQL views that
+file ({\raise.17ex\hbox{$\scriptstyle\sim$}}270\,KB) defines 153~SQL views that
 reference these Parquet files and can be regenerated from source using the
 provided pipeline scripts.
 
@@ -35,8 +35,9 @@ The principal schemas and their contents are:
   \item \texttt{ros}: patent--paper citation pairs (47.8M) from Reliance on Science.
   \item \texttt{p2p}: preprint-to-published DOI mappings (146K) from bioRxiv/medRxiv.
   \item \texttt{xref}: cross-source linkage tables---\texttt{unified\_papers}
-    (293M, 29~columns), \texttt{doi\_map}, and \texttt{topic\_ontology\_map}
-    (16,150 mappings).
+    (293M, 29~columns), \texttt{doi\_map}, \texttt{topic\_ontology\_map}
+    (16,150 mappings), and temporal guardrail views
+    (\texttt{source\_temporal\_coverage}, \texttt{paper\_temporal\_flags}).
   \item 13~ontology schemas (e.g., \texttt{mesh}, \texttt{go}, \texttt{cso}),
     each containing \texttt{*\_terms}, \texttt{*\_hierarchy}, and optionally
     \texttt{*\_xrefs} tables.

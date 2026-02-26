@@ -87,7 +87,7 @@ The Science Data Lake is built on a \emph{views-over-Parquet} architecture using
 DuckDB~\cite{raasveldt2019duckdb} (Figure~\ref{fig:architecture}). Each data source
 is first converted from its native format (JSON Lines, CSV, N-Triples) into columnar
 Apache Parquet files, totaling approximately 960\,GB on disk. A lightweight DuckDB
-database ({\raise.17ex\hbox{$\scriptstyle\sim$}}270\,KB) defines 151~SQL views
+database ({\raise.17ex\hbox{$\scriptstyle\sim$}}270\,KB) defines 153~SQL views
 organized into 22~schemas that reference these Parquet files without copying data.
 
 The schema design follows two principles. \textbf{Source-level preservation}: each
@@ -254,13 +254,41 @@ All           & $\geq 0.65$ & 16,150 & 4,509 (99.84\%) \\
 \end{tabular}
 \end{table}
 
-To contextualize the embedding approach, we compared it against a string-matching
-baseline using Jaro--Winkler similarity at a threshold of 0.90, which produced only
-937~matches---a 17-fold reduction relative to the embedding method. The embedding
-approach captures semantic similarity that string matching cannot: for example,
-the OpenAlex topic ``Artificial Intelligence in Medicine'' maps to EDAM's
-``Medical informatics'' (cosine similarity 0.87) and NCIT's ``Biomedical
-Informatics'' (0.85), neither of which would be found by string comparison.
+To contextualize the embedding approach, we compared it against three
+standard baselines (Table~\ref{tab:baselines}): character-level TF-IDF
+cosine similarity (bigram-to-4-gram, \texttt{char\_wb} analyzer),
+BM25~\cite{robertson2009bm25} (Okapi BM25 over whitespace-tokenized labels,
+min-max normalized, top-20 per topic), and Jaro--Winkler string similarity
+at a threshold of 0.90. All methods operate on the same 4,516 topics and
+291K ontology terms, with large ontologies (MeSH, ChEBI, NCIT) using exact
+matching in all cases for consistency.
+
+\begin{table}[t]
+\centering
+\caption{Comparison of ontology alignment methods. All methods use the same
+topic and ontology term sets; mappings are counted at a similarity threshold
+of $\geq 0.65$. Precision, recall, and F1 are computed against a stratified
+300-pair gold-standard annotation set (see Section~\ref{sec:validation}).
+\textsuperscript{$\dagger$}Metrics to be filled after annotation.}
+\label{tab:baselines}
+\small
+\begin{tabular}{@{}l r r r r r@{}}
+\toprule
+\textbf{Method} & \textbf{Mappings} & \textbf{Topics} & \textbf{P} & \textbf{R} & \textbf{F1} \\
+\midrule
+Jaro--Winkler ($\geq 0.90$) & 937    & 675   & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- \\
+TF-IDF cosine               & 4,861  & 2,620 & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- \\
+BM25                        & 14,929 & 4,513 & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- \\
+BGE-large (ours)            & 16,150 & 4,509 & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The embedding approach captures semantic similarity that lexical methods
+cannot: for example, the OpenAlex topic ``Artificial Intelligence in
+Medicine'' maps to EDAM's ``Medical informatics'' (cosine similarity 0.87)
+and NCIT's ``Biomedical Informatics'' (0.85), neither of which would be
+found by any of the three string-based baselines.
 
 Figure~\ref{fig:umap} visualizes the joint embedding space using
 UMAP~\cite{mcinnes2018umap}, showing how OpenAlex topics cluster by domain and

@@ -114,26 +114,24 @@ size tier, along with nine cross-dataset join strategies and common query
 recipes---all in a format optimized for LLM consumption rather than
 narrative reading.
 
-In practice, a researcher can provide \texttt{SCHEMA.md} as context to an
-LLM agent (e.g., via a system prompt or file attachment) and issue
-natural-language analytical requests. The agent can then compose correct
-DuckDB SQL queries spanning multiple schemas without manual schema
-exploration. For example, the prompt ``find the most disruptive papers in
-computer science that have open-source code and check their retraction
-status'' requires joining four schemas (\texttt{sciscinet},
+The structured documentation---which includes column types, row counts,
+size tiers, and nine cross-dataset join strategies---is designed to reduce
+the schema-discovery burden that typically limits LLM-based data
+exploration. For example, a query such as ``find the most disruptive
+papers in computer science that have open-source code and check their
+retraction status'' requires joining four schemas (\texttt{sciscinet},
 \texttt{xref}, \texttt{pwc}, \texttt{retwatch}) with appropriate DOI
-normalization---a query that \texttt{SCHEMA.md} provides sufficient
-context to construct autonomously.
+normalization; \texttt{SCHEMA.md} consolidates the metadata needed to
+formulate such joins.
 
 This design reflects a deliberate choice: rather than building a custom
 natural-language interface (which would require maintenance and constrain
 the query space), we provide structured documentation that any
 general-purpose LLM agent can consume. As LLM capabilities evolve, the
-same schema reference remains useful without modification. This approach
-aligns with the broader trend of LLM-driven scientific
-discovery~\cite{wang2023aiforscience}, where researchers increasingly
-delegate data retrieval and exploratory analysis to AI assistants that
-operate over structured data.
+same schema reference remains useful without modification. Systematic
+evaluation of text-to-SQL performance across LLM providers is beyond the
+scope of this data descriptor; here we describe the documentation
+infrastructure rather than claiming specific agent accuracy.
 
 \subsection{Limitations and Extensibility}
 

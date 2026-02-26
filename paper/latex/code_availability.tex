@@ -18,7 +18,7 @@ master CLI script:
     each source from its native format (JSON Lines, CSV, N-Triples) into
     columnar Apache Parquet files.
   \item \textbf{Create views} (\texttt{create\_unified\_db.py}): generates
-    the DuckDB database with 151~SQL views across 22~schemas.
+    the DuckDB database with 153~SQL views across 22~schemas.
   \item \textbf{Materialize} (\texttt{materialize\_unified\_papers.py}):
     constructs the \texttt{xref.unified\_papers} join table through DOI
     normalization and multi-source record linkage.
@@ -32,6 +32,6 @@ Additional scripts include \texttt{convert\_ontologies.py} (five
 format-specific parsers for the 13~ontologies) and
 \texttt{ontology\_registry.py} (a declarative registry of ontology URLs
 and formats). The repository also includes a structured schema reference
-(\texttt{SCHEMA.md}) that documents all 151~views with their columns,
+(\texttt{SCHEMA.md}) that documents all 153~views with their columns,
 types, row counts, and cross-dataset join strategies, designed to be
-consumed by LLM-based coding agents as well as human developers.
+consumed by both LLM-based coding agents and human developers.

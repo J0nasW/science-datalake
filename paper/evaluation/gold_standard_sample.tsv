@@ -1,0 +1,301 @@
+pair_id	topic_name	ontology	ontology_term_label	similarity	match_type	stratum	label
+1	Regional Development and Management Studies	unesco	Regional development	0.8137	label	mid_range	
+2	Fuzzy Logic and Control Systems	stw	Fuzzy logic	0.8976	synonym	high_quality	
+3	Quantum chaos and dynamical systems	physh	Quantum chaotic systems	0.9625	label	exact	
+4	Visual Attention and Saliency Detection	hpo	Visual gaze preference	0.7775	label	mid_range	
+5	Scientific Research Methodologies and Applications	unesco	Scientific methods	0.8335	label	mid_range	
+6	Tracheal and airway disorders	hpo	Tracheal disease	0.8563	synonym	high_quality	
+7	Material Selection and Properties	msc2020	Material properties given special treatment	0.866	label	high_quality	
+8	Brucella: diagnosis, epidemiology, treatment	physh	Epidemiology, prevention & mitigation of disease spreading	0.686	label	borderline	
+9	Peroxisome Proliferator-Activated Receptors	mesh	Peroxisome Proliferator-Activated Receptors	1.0	exact	exact	
+10	Eosinophilic Esophagitis	hpo	Eosinophilic esophagitis	1.0	synonym	exact	
+11	Mathematical functions and polynomials	cso	orthogonal polynomials	0.8144	label	mid_range	
+12	Skin Diseases and Diabetes	unesco	Skin diseases	0.839	label	mid_range	
+13	Metallurgical Processes and Thermodynamics	physh	Metallurgical magnetohydrodynamics	0.8168	label	mid_range	
+14	Insect and Pesticide Research	edam	Entomology	0.7552	synonym	mid_range	
+15	Engineering and Agricultural Innovations	unesco	Agricultural engineering	0.8895	label	high_quality	
+16	Gene Regulatory Network Analysis	edam	Gene regulatory network analysis	1.0	label	exact	
+17	Gene Regulatory Network Analysis	physh	Gene regulatory networks	0.9424	label	high_quality	
+18	Water Quality Monitoring Technologies	stw	Environmental monitoring	0.8079	synonym	mid_range	
+19	Rangeland and Wildlife Management	stw	Wildlife management	0.8714	synonym	high_quality	
+20	Urban and Freight Transport Logistics	msc2020	Transportation, logistics and supply chain management	0.8542	label	high_quality	
+21	Composite Material Mechanics	unesco	Composite materials	0.8649	label	high_quality	
+22	Cancer Research and Treatment	hpo	Head and neck cancer	0.7587	synonym	mid_range	
+23	Remote-Sensing Image Classification	cso	remote sensing image classification	0.9914	label	exact	
+24	Alcoholism and Thiamine Deficiency	go	thiamin and derivative metabolism	0.801	synonym	mid_range	
+25	Microfinance and Financial Inclusion	unesco	Microfinance	0.8042	synonym	mid_range	
+26	Multiferroics and related materials	physh	Multiferroics	0.9196	label	high_quality	
+27	Interconnection Networks and Systems	cso	interconnection networks	0.9604	label	exact	
+28	History and Theory of Mathematics	msc2020	History of mathematics and mathematicians	0.9234	label	high_quality	
+29	Fashion and Cultural Textiles	cso	smart textiles	0.792	label	mid_range	
+30	Plant Taxonomy and Phylogenetics	unesco	Botanical taxonomy	0.905	synonym	high_quality	
+31	Low-power high-performance VLSI design	cso	low-power design	0.8661	synonym	high_quality	
+32	Aeolian processes and effects	unesco	Environmental effects	0.7266	synonym	borderline	
+33	Hand Gesture Recognition Systems	hpo	Hand-taking gestures	0.7864	synonym	mid_range	
+34	Vehicular Ad Hoc Networks (VANETs)	cso	vehicular ad hoc network (vanet)	0.962	label	exact	
+35	Collembola Taxonomy and Ecology Studies	edam	Taxonomic classification	0.688	label	borderline	
+36	Mathematical and Theoretical Epidemiology and Ecology Models	edam	Ecological modelling	0.8128	label	mid_range	
+37	Cultural and Mythological Studies	unesco	Cultural studies	0.8617	label	high_quality	
+38	Laser-Plasma Interactions and Diagnostics	physh	Laser-plasma interactions	0.9508	label	exact	
+39	Iterative Learning Control Systems	msc2020	Iterative learning control	0.9708	label	exact	
+40	Marketing and Advertising Strategies	cso	marketing strategy	0.8636	label	high_quality	
+41	Advanced Radiotherapy Techniques	physh	Radiation therapy	0.7718	label	mid_range	
+42	Atomic and Molecular Physics	unesco	Atomic physics	0.8465	synonym	mid_range	
+43	Diverse Musicological Studies	physh	Musical acoustics	0.7181	label	borderline	
+44	Educational Reforms and Innovations	stw	Education reform	0.853	label	high_quality	
+45	Coal and Coke Industries Research	stw	Industrial research	0.7948	label	mid_range	
+46	Travel-related health issues	physh	Transportation	0.685	label	borderline	
+47	Radiopharmaceutical Chemistry and Applications	physh	Radiopharmaceuticals	0.8624	label	high_quality	
+48	Soil Science and Environmental Management	edam	Soil science	0.8722	synonym	high_quality	
+49	Research in Cotton Cultivation	go	cotton fiber development	0.7784	synonym	mid_range	
+50	Data Analysis with R	cso	regression analysis	0.7861	synonym	mid_range	
+51	Place Attachment and Urban Studies	stw	Urban studies	0.8163	label	mid_range	
+52	Psychosomatic Disorders and Their Treatments	hpo	Psychosomatic seizure	0.7381	synonym	borderline	
+53	Media, Religion, Digital Communication	unesco	Digital media	0.7955	synonym	mid_range	
+54	Historical and Scientific Studies	stw	Historical studies	0.8886	label	high_quality	
+55	Wireless Power Transfer Systems	physh	Wireless power transfer	0.9609	label	exact	
+56	Education Systems and Policy	msc2020	Educational policy and systems	0.9679	label	exact	
+57	Technology in Education and Healthcare	unesco	Educational technology	0.8598	label	high_quality	
+58	Research in Social Sciences	stw	Social research	0.8862	label	high_quality	
+59	Advanced Frequency and Time Standards	physh	Time & frequency standards	0.9242	label	high_quality	
+60	Face and Expression Recognition	cso	facial expression recognition	0.9467	label	high_quality	
+61	Natural Antidiabetic Agents Studies	go	regulation of glucose biosynthesis	0.6764	synonym	borderline	
+62	Distributed and Parallel Computing Systems	cso	distributed computing systems	0.9517	label	exact	
+63	Integrated Energy Systems Optimization	stw	Energy systems integration	0.8677	synonym	high_quality	
+64	Biofield Effects and Biophysics	physh	Electric field effects	0.8043	label	mid_range	
+65	Hallucinations in medical conditions	hpo	Hallucinations	0.8844	label	high_quality	
+66	Aquatic life and conservation	stw	Marine conservation	0.8278	label	mid_range	
+67	Eosinophilic Esophagitis	mesh	Eosinophilic Esophagitis	1.0	exact	exact	
+68	Media and Digital Communication	cso	digital communication	0.8769	synonym	high_quality	
+69	Botulinum Toxin and Related Neurological Disorders	edam	Neurological disorders	0.7758	synonym	mid_range	
+70	Chemical and Physical Studies	unesco	Physical chemistry	0.8343	label	mid_range	
+71	Time Series Analysis and Forecasting	stw	Time series analysis	0.8947	label	high_quality	
+72	Pharmacology and Obesity Treatment	unesco	Obesity	0.7545	label	mid_range	
+73	Neural Networks and Applications	physh	Neural networks	0.8919	synonym	high_quality	
+74	Diatoms and Algae Research	edam	Freshwater science	0.7324	synonym	borderline	
+75	Computer Graphics and Visualization Techniques	edam	Computer graphics	0.8725	synonym	high_quality	
+76	Spider Taxonomy and Behavior Studies	physh	Animal behavior, social interactions & emergent phenomena	0.6873	label	borderline	
+77	Image Processing and 3D Reconstruction	edam	Image processing	0.861	synonym	high_quality	
+78	IL-33, ST2, and ILC Pathways	go	IL33 signaling pathway	0.8504	synonym	high_quality	
+79	Educational Systems and Policies	msc2020	Educational policy and systems	0.9714	label	exact	
+80	Arctic and Russian Policy Studies	stw	International environmental policy	0.7256	label	borderline	
+81	Crystallography and Radiation Phenomena	edam	X-ray crystallography	0.8288	synonym	mid_range	
+82	Environmental and Industrial Safety	unesco	Industrial safety	0.8697	synonym	high_quality	
+83	Blind Source Separation Techniques	cso	blind source separation	0.9562	synonym	exact	
+84	Family Caregiving in Mental Illness	unesco	Mental illness	0.6991	synonym	borderline	
+85	Social Work Education and Practice	stw	Social work	0.814	synonym	mid_range	
+86	Chalcogenide Semiconductor Thin Films	cso	optical thin films	0.7917	label	mid_range	
+87	Focus Groups and Qualitative Methods	unesco	Qualitative analysis	0.7698	label	mid_range	
+88	Polish Legal and Social Issues	stw	Polish People	0.7569	label	mid_range	
+89	Biochemical effects in animals	msc2020	Animal behavior	0.7457	label	borderline	
+90	Infectious Diseases and Tuberculosis	doid	tuberculosis	0.7854	label	mid_range	
+91	Topology Optimization in Engineering	cso	topology optimization	0.958	label	exact	
+92	Attention Deficit Hyperactivity Disorder	ncit	Attention Deficit Hyperactivity Disorder	1.0	exact	exact	
+93	Plant Gene Expression Analysis	cso	gene expression profiling	0.8654	label	high_quality	
+94	Attention Deficit Hyperactivity Disorder	hpo	Attention deficit hyperactivity disorder	1.0	label	exact	
+95	Digital and Traditional Archives Management	stw	Digital preservation	0.8129	label	mid_range	
+96	Environmental Impact and Sustainability	unesco	Environmental impact	0.8691	synonym	high_quality	
+97	Freedom of Expression and Defamation	stw	Freedom of expression	0.744	label	borderline	
+98	Growth Hormone and Insulin-like Growth Factors	go	insulin-like growth factor	0.8703	synonym	high_quality	
+99	Metaheuristic Optimization Algorithms Research	stw	Metaheuristics	0.87	label	high_quality	
+100	History of Medicine and Tropical Health	stw	Tropical disease	0.7307	label	borderline	
+101	Amyloidosis: Diagnosis, Treatment, Outcomes	doid	AH/AL amyloidosis	0.8098	synonym	mid_range	
+102	Semiconductor Quantum Structures and Devices	cso	semiconductor quantum wires	0.8729	label	high_quality	
+103	Nuclear physics research studies	cso	nuclear physics	0.8506	label	high_quality	
+104	Autophagy in Disease and Therapy	hpo	Autophagia	0.7781	label	mid_range	
+105	NMR spectroscopy and applications	edam	NMR spectroscopy	0.9185	synonym	high_quality	
+106	China's Global Influence and Migration	msc2020	Currents in global analysis	0.6926	label	borderline	
+107	Youth Education and Societal Dynamics	msc2020	Mathematics education and society	0.719	label	borderline	
+108	Astronomical and nuclear sciences	stw	Nuclear physics	0.8001	label	mid_range	
+109	Nursing care and research	stw	Evidence-based practice	0.7133	synonym	borderline	
+110	Cellular and Composite Structures	stw	Composite materials	0.8316	label	mid_range	
+111	Image Processing and 3D Reconstruction	physh	Image processing	0.861	label	high_quality	
+112	Higher Education and Teaching Methods	stw	Higher education teaching	0.8783	label	high_quality	
+113	Doping in Sports	mesh	Doping in Sports	1.0	exact	exact	
+114	Surface Treatment and Coatings	physh	Coatings	0.8661	label	high_quality	
+115	Engine and Fuel Emissions	cso	internal combustion engines	0.7839	label	mid_range	
+116	Advanced Scientific Techniques and Applications	msc2020	Applications to the sciences	0.785	label	mid_range	
+117	Geological Formations and Processes Exploration	cso	geophysical prospecting	0.7966	label	mid_range	
+118	Digital Image Processing Techniques	cso	digital image processing	0.9553	synonym	exact	
+119	Radioactivity and Radon Measurements	cso	noise measurements	0.7149	label	borderline	
+120	Connective tissue disorders research	doid	connective tissue disorder	0.8689	synonym	high_quality	
+121	Global Health Care Issues	edam	Health care research	0.715	synonym	borderline	
+122	Multi-Criteria Decision Making	cso	multi-criteria decision making	1.0	label	exact	
+123	Engineering Education and Pedagogy	unesco	Engineering education	0.8681	label	high_quality	
+124	Eosinophilic Esophagitis	ncit	Eosinophilic Esophagitis	1.0	exact	exact	
+125	Wheat and Barley Genetics and Pathology	cso	genetic selection	0.6984	synonym	borderline	
+126	Tendon Structure and Treatment	go	tendon development	0.7947	label	mid_range	
+127	Education Systems and Policies	msc2020	Educational policy and systems	0.9623	label	exact	
+128	Advanced Mathematical Theories	msc2020	Models of other mathematical theories	0.8339	label	mid_range	
+129	Scientific Research and Technology	unesco	Scientific research	0.8915	synonym	high_quality	
+130	Grey System Theory Applications	msc2020	Applications of mathematical programming	0.7533	label	mid_range	
+131	Crustacean biology and ecology	go	organelle organization and biogenesis	0.7276	synonym	borderline	
+132	Health and Lifestyle Studies	msc2020	Social and behavioral sciences: general topics	0.7258	label	borderline	
+133	Fullerene Chemistry and Applications	unesco	Molecular physics	0.7014	label	borderline	
+134	History and Politics in Latin America	msc2020	History, political science	0.7511	label	mid_range	
+135	Connective tissue disorders research	unesco	Biomedical research	0.7764	synonym	mid_range	
+136	Mercury impact and mitigation studies	unesco	Mercury	0.7337	label	borderline	
+137	Satellite Communication Systems	stw	Satellite communications	0.9606	label	exact	
+138	Social Science and Policy Research	unesco	Social science policy	0.8811	label	high_quality	
+139	Latin American history and culture	unesco	Latin American history	0.9362	label	high_quality	
+140	Cultural and Artistic Studies	stw	Cultural studies	0.8806	label	high_quality	
+141	Synthesis of Organic Compounds	go	organic hydroxy compound synthesis	0.8839	synonym	high_quality	
+142	Lower Extremity Biomechanics and Pathologies	physh	Biomechanics	0.8354	label	mid_range	
+143	Spatial Neglect and Hemispheric Dysfunction	doid	simultanagnosia	0.7845	label	mid_range	
+144	Ubiquitin and proteasome pathways	go	proteasome pathway	0.8954	synonym	high_quality	
+145	Merger and Competition Analysis	cso	competitive analysis	0.8632	label	high_quality	
+146	Economic and Social Development	unesco	Economic and social development	1.0	label	exact	
+147	Historical and Archaeological Studies	edam	Studies	0.7695	synonym	mid_range	
+148	Complex Systems and Dynamics	stw	Complex systems	0.9047	label	high_quality	
+149	Aquatic Ecosystems and Biodiversity	unesco	Aquatic ecosystems	0.9277	label	high_quality	
+150	DNA and Biological Computing	cso	dna computing	0.9593	label	exact	
+151	Holomorphic and Operator Theory	msc2020	Operator theory and harmonic analysis	0.8853	label	high_quality	
+152	Direction-of-Arrival Estimation Techniques	cso	direction-of-arrival estimation	0.9673	synonym	exact	
+153	Software Engineering and Design Patterns	cso	software design patterns	0.9547	label	exact	
+154	Evolution and Genetic Dynamics	stw	Demographic dynamics	0.7946	synonym	mid_range	
+155	Disaster Management and Resilience	physh	Network resilience	0.7435	label	borderline	
+156	Chaos control and synchronization	physh	Control & applications of chaos	0.8861	label	high_quality	
+157	Lysosomal Storage Disorders Research	doid	lysosomal storage disease	0.8545	label	high_quality	
+158	Molecular Communication and Nanonetworks	go	cell communication by chemical coupling	0.823	label	mid_range	
+159	Eosinophilic Esophagitis	doid	eosinophilic esophagitis	1.0	label	exact	
+160	Social Issues and Sustainability	physh	Sustainability	0.8035	label	mid_range	
+161	Comparative and World Literature	unesco	European literature	0.7937	label	mid_range	
+162	Ethics in Business and Education	stw	Business ethics	0.8526	label	high_quality	
+163	Philosophy and Social Theory	unesco	Political theory	0.7927	label	mid_range	
+164	Mollusks and Parasites Studies	unesco	Parasites	0.7373	synonym	borderline	
+165	Physiological and biochemical adaptations	unesco	Biological adaptation	0.8778	label	high_quality	
+166	Gender and Feminist Studies	stw	Gender studies	0.9099	label	high_quality	
+167	Youth, Drugs, and Violence	unesco	Youth unrest	0.7531	label	mid_range	
+168	Electronic Health Records Systems	cso	electronic health record systems	0.9921	label	exact	
+169	Environmental law and policy	unesco	Environmental law	0.9152	synonym	high_quality	
+170	Power Line Inspection Robots	cso	power-line communications	0.7546	label	mid_range	
+171	Molecular Biology Techniques and Applications	go	DNA amplification	0.76	label	mid_range	
+172	Structural Engineering and Vibration Analysis	stw	Structural engineering	0.8556	label	high_quality	
+173	Psycholinguistics and Behavioral Studies	cso	psycholinguistics	0.9078	label	high_quality	
+174	Nursing Education, Practice, and Leadership	cso	teaching practices	0.7062	synonym	borderline	
+175	Youth Substance Use and School Attendance	unesco	School attendance	0.7748	synonym	mid_range	
+176	Bacillus and Francisella bacterial research	edam	Microbial surveillance	0.678	synonym	borderline	
+177	Geotechnical Engineering and Analysis	stw	Hydraulic engineering	0.7491	label	borderline	
+178	Cardiomyopathy and Myosin Studies	physh	Myosin	0.7702	label	mid_range	
+179	Botany and Plant Ecology Studies	stw	Horticulture	0.7505	label	mid_range	
+180	DNA and Biological Computing	msc2020	Biologically inspired models of computation (DNA computing, membrane computing, etc.)	0.9015	label	high_quality	
+181	Media Discourse and Social  Analysis	unesco	Sociology of communication	0.7672	label	mid_range	
+182	Cerebral Venous Sinus Thrombosis	hpo	Cerebral venous sinus thrombosis	1.0	label	exact	
+183	Spacecraft and Cryogenic Technologies	physh	Cryogenic technology	0.8648	label	high_quality	
+184	Marine Sponges and Natural Products	cso	actinomycetes and related organisms	0.7002	label	borderline	
+185	Viral-associated cancers and disorders	edam	Head and neck disorders	0.7202	synonym	borderline	
+186	Attention Deficit Hyperactivity Disorder	doid	attention deficit hyperactivity disorder	1.0	label	exact	
+187	COVID-19 Clinical Research Studies	go	interleukin-19 production	0.6653	label	borderline	
+188	Risk Perception and Management	msc2020	Statistical methods; risk measures	0.7322	label	borderline	
+189	Plant-based Medicinal Research	stw	Plant biotechnology	0.7762	synonym	mid_range	
+190	Relativity and Gravitational Theory	msc2020	Relativity and gravitational theory	1.0	label	exact	
+191	Lignin and Wood Chemistry	unesco	Plant chemistry	0.8009	synonym	mid_range	
+192	Satellite Communication Systems	cso	satellite communication systems	1.0	label	exact	
+193	Family and Patient Care in Intensive Care Units	hpo	Ventilator dependence with inability to wean	0.6577	label	borderline	
+194	Biochemical Analysis and Sensing Techniques	cso	polarographic analysis	0.7649	label	mid_range	
+195	Magnesium in Health and Disease	hpo	Abnormal magnesium metabolism	0.8084	synonym	mid_range	
+196	Linguistics and Language Studies	unesco	Linguistics	0.8788	label	high_quality	
+197	Methodology and Impact of Social Science Research	unesco	Social science research	0.8335	synonym	mid_range	
+198	Fungal and yeast genetics research	cso	genetic analysis	0.7278	synonym	borderline	
+199	Gaussian Processes and Bayesian Inference	cso	gaussian processes	0.9241	label	high_quality	
+200	Electric Power Systems and Control	physh	Electric power transmission	0.8006	label	mid_range	
+201	Educational Theory and Curriculum Studies	unesco	Educational theory	0.8678	label	high_quality	
+202	Digital Rights Management and Security	cso	digital rights management	0.9601	synonym	exact	
+203	Underwater Vehicles and Communication Systems	cso	underwater acoustic communications	0.9006	label	high_quality	
+204	Parasitic infections in humans and animals	doid	parasitic infectious disease	0.8264	label	mid_range	
+205	Sports and Physical Education Research	unesco	Educational research	0.7801	label	mid_range	
+206	Smart Materials for Construction	cso	smart materials	0.8958	label	high_quality	
+207	Quantum Information and Cryptography	physh	Quantum cryptography	0.9514	label	exact	
+208	Values and Moral Education	unesco	Values education	0.9176	synonym	high_quality	
+209	Animal Nutrition and Physiology	msc2020	Animal behavior	0.7682	label	mid_range	
+210	Market Dynamics and Volatility	stw	Economic dynamics	0.8251	label	mid_range	
+211	Municipal Solid Waste Management	stw	Municipal waste management	0.9697	label	exact	
+212	Physical Education and Pedagogy	unesco	Physical education	0.8627	label	high_quality	
+213	Soil and Water Nutrient Dynamics	stw	Ecological dynamics	0.742	synonym	borderline	
+214	Literature, Musicology, and Cultural Analysis	unesco	Literary analysis	0.8154	label	mid_range	
+215	Hydrogen Storage and Materials	physh	Hydrogen storage materials	0.9706	label	exact	
+216	Conservation Techniques and Studies	physh	Experimental Techniques	0.7589	label	mid_range	
+217	Speech Recognition and Synthesis	cso	speech synthesis	0.9124	label	high_quality	
+218	Pathogenesis and Treatment of Hiccups	go	up-regulation of pharyngeal pumping	0.7067	synonym	borderline	
+219	Public Spaces through Art	unesco	Urban spaces	0.7887	label	mid_range	
+220	Immunodeficiency and Autoimmune Disorders	doid	immunodeficiency 85 and autoimmunity	0.8593	synonym	high_quality	
+221	Emotional Intelligence and Performance	stw	Emotional intelligence	0.8918	label	high_quality	
+222	Engineering Applied Research	unesco	Applied research	0.904	label	high_quality	
+223	Magnesium Oxide Properties and Applications	unesco	Thermal properties	0.663	label	borderline	
+224	Innovative Education Methods and Tools	unesco	Teaching method innovations	0.8834	label	high_quality	
+225	Financial Risk and Volatility Modeling	stw	Stochastic volatility model	0.8513	synonym	high_quality	
+226	Sustainable Industrial Ecology	stw	Industrial ecology	0.9587	synonym	exact	
+227	Porphyrin Metabolism and Disorders	hpo	Abnormal circulating porphyrin concentration	0.7356	label	borderline	
+228	Action Observation and Synchronization	hpo	Irregular visual pursuit movements	0.7552	synonym	mid_range	
+229	Optical Systems and Laser Technology	cso	laser systems	0.8584	label	high_quality	
+230	Synthesis and characterization of novel inorganic/organometallic compounds	go	organomercury synthesis	0.7789	synonym	mid_range	
+231	Homotopy and Cohomology in Algebraic Topology	msc2020	Homology and cohomology theories in algebraic topology	0.9601	label	exact	
+232	Advanced Image Processing Techniques	msc2020	Computing methodologies for image processing	0.8406	label	mid_range	
+233	Sports injuries and prevention	hpo	Exercise-induced muscle pain	0.7025	synonym	borderline	
+234	Temporomandibular Joint Disorders	mesh	Temporomandibular Joint Disorders	1.0	exact	exact	
+235	Communication in Education and Healthcare	cso	speech communication	0.7928	label	mid_range	
+236	Energy, Environment, Agriculture Analysis	stw	Agriculture sector	0.748	synonym	borderline	
+237	Innovations in Concrete and Construction Materials	cso	innovative technologies	0.7754	label	mid_range	
+238	Social Skills and Education	stw	Social skills	0.8867	synonym	high_quality	
+239	Geography and Environmental Studies	edam	Environmental sciences	0.8089	label	mid_range	
+240	Education and Professional Development	cso	teaching and learning	0.8282	label	mid_range	
+241	Gyrotron and Vacuum Electronics Research	unesco	Cyclotrons	0.758	synonym	mid_range	
+242	Bone Tissue Engineering Materials	edam	Biomaterials	0.7659	label	mid_range	
+243	Rheology and Fluid Dynamics Studies	msc2020	Foundations, constitutive equations, rheology, hydrodynamical models of non-fluid phenomena	0.8247	label	mid_range	
+244	Educational Tools and Methods	unesco	Educational methods	0.908	synonym	high_quality	
+245	Antioxidants, Aging, Portulaca oleracea	go	oxidative stress-induced premature senescence	0.7231	label	borderline	
+246	Digital Media Forensic Detection	edam	Format detection	0.7694	label	mid_range	
+247	Algorithms and Data Compression	cso	data compression algorithms	0.9656	label	exact	
+248	Agricultural and Food Sciences	stw	Agricultural sciences	0.8864	label	high_quality	
+249	Near-Field Optical Microscopy	cso	near field scanning optical microscopy	0.9552	label	exact	
+250	Microscopic Colitis	ncit	Microscopic Colitis	1.0	exact	exact	
+251	Cross-Border Cooperation and Integration	stw	Cross-border cooperation	0.9609	synonym	exact	
+252	Macrophage Migration Inhibitory Factor	ncit	Macrophage Migration Inhibitory Factor	1.0	exact	exact	
+253	Botanical Research and Applications	unesco	Botanical research	0.9032	synonym	high_quality	
+254	Cardiovascular and Diving-Related Complications	edam	Cardiovascular disease	0.7001	synonym	borderline	
+255	Decolonial Thought and Epistemologies	stw	Decolonization	0.7707	synonym	mid_range	
+256	Structural mechanics and materials	cso	structural systems	0.8136	label	mid_range	
+257	Fluid Dynamics and Heat Transfer	msc2020	Thermodynamics and heat transfer	0.9037	label	high_quality	
+258	Linguistic and Sociocultural Studies	msc2020	Linguistics	0.7938	label	mid_range	
+259	Public Administration and Governance	unesco	Public administration	0.883	label	high_quality	
+260	Academic Research and Education Studies	stw	Academic research	0.8627	synonym	high_quality	
+261	Medical Education and Admissions	stw	Admission to higher education	0.7617	label	mid_range	
+262	Wildlife Conservation and Criminology Analyses	stw	Wildlife conservation	0.7861	label	mid_range	
+263	Higher Education and Employability	stw	Employability	0.8662	label	high_quality	
+264	Silymarin and Mushroom Poisoning	unesco	Mushrooms	0.7089	synonym	borderline	
+265	World Systems and Global Transformations	physh	Social system dynamics	0.7784	label	mid_range	
+266	Animal health and immunology	edam	Immunology and genetics	0.8685	synonym	high_quality	
+267	Iterative Learning Control Systems	cso	iterative learning control	0.9708	synonym	exact	
+268	Linguistics and Discourse Analysis	edam	Text analysis	0.7744	synonym	mid_range	
+269	Polymer Science and PVC	physh	Polymers	0.8078	label	mid_range	
+270	Digital Accessibility for Disabilities	cso	web accessibility	0.8388	label	mid_range	
+271	School Leadership and Teacher Performance	stw	School performance	0.7458	synonym	borderline	
+272	Mobile Ad Hoc Networks	cso	mobile ad hoc networks	1.0	synonym	exact	
+273	International Law and Aviation	stw	International aviation law	0.9714	synonym	exact	
+274	Fractional Differential Equations Solutions	cso	fractional differential equations	0.9013	label	high_quality	
+275	Nuclear physics research studies	physh	Nuclear Physics Research Areas	0.9093	label	high_quality	
+276	Optical Coherence Tomography Applications	cso	optical coherence tomography (oct)	0.862	label	high_quality	
+277	Environmental law and policy	stw	Environmental law	0.9152	label	high_quality	
+278	Politics and Conflicts in Afghanistan, Pakistan, and Middle East	stw	Afghanistan	0.7534	label	mid_range	
+279	Methane Hydrates and Related Phenomena	go	methane degradation	0.7428	synonym	borderline	
+280	Advanced Image Fusion Techniques	cso	image fusion techniques	0.9627	label	exact	
+281	Sports and Physical Education Studies	unesco	Physical education	0.8384	label	mid_range	
+282	Global Health and Epidemiology	msc2020	Medical epidemiology	0.8071	label	mid_range	
+283	Heterotopic Ossification and Related Conditions	hpo	Heterotopic ossification	0.9384	synonym	high_quality	
+284	Granular flow and fluidized beds	physh	Granular flows	0.8866	label	high_quality	
+285	Religion, Gender, and Enlightenment	stw	Enlightenment	0.7737	label	mid_range	
+286	Advanced Graph Neural Networks	msc2020	Probabilistic graphical models	0.7586	label	mid_range	
+287	Catalytic Processes in Materials Science	physh	Chemical kinetics, dynamics & catalysis	0.7685	label	mid_range	
+288	Poxvirus research and outbreaks	doid	Arenaviridae infectious disease	0.6932	label	borderline	
+289	Metallurgical and Alloy Processes	unesco	Metallurgical engineering	0.8726	synonym	high_quality	
+290	Critical Theory and Political Philosophy	msc2020	Philosophical and critical aspects of logic and foundations	0.7471	label	borderline	
+291	Sociology and Cultural Identity Studies	unesco	Cultural sociology	0.8575	label	high_quality	
+292	Organoselenium and organotellurium chemistry	cso	chalcogenides	0.7261	label	borderline	
+293	Security in Wireless Sensor Networks	cso	wireless sensor networks	0.8621	synonym	high_quality	
+294	Electoral Systems and Political Participation	stw	Political participation	0.8439	label	mid_range	
+295	Distributed systems and fault tolerance	cso	fault-tolerant systems	0.9174	label	high_quality	
+296	Solid-state spectroscopy and crystallography	physh	Solid-state chemistry	0.8938	label	high_quality	
+297	Quantum many-body systems	msc2020	Many-body theory; quantum Hall effect	0.8569	label	high_quality	
+298	Opioid Use Disorder Treatment	doid	opioid abuse	0.7378	label	borderline	
+299	Patient Safety and Medication Errors	edam	Patient safety	0.8734	synonym	high_quality	
+300	Science and Climate Studies	stw	Climate science	0.8885	label	high_quality	

@@ -39,7 +39,7 @@ that exist in no single database.
 This vignette characterizes retracted papers by their pre-retraction impact
 metrics and identifies ontology domains with anomalous retraction rates.
 
-\begin{sloppypar}
+{\emergencystretch=1.5em
 Joining \texttt{retwatch.retracted\_papers}, \texttt{sciscinet.paper\_metrics},
 and \texttt{xref.unified\_papers}, we obtained 58,775 retracted papers with
 associated SciSciNet metrics. Retracted papers show a mean disruption of
@@ -47,8 +47,7 @@ $0.0035$ compared with $0.0026$ for non-retracted papers, and the most-cited
 retracted paper accumulated 8,062 citations before retraction. Ontology-level
 enrichment analysis reveals retraction hotspots: topics mapped to ``AI
 Applications'' show 394$\times$ enrichment, and ``Advanced Technology''
-topics show 338$\times$ enrichment relative to baseline retraction rates.
-\end{sloppypar}
+topics show 338$\times$ enrichment relative to baseline retraction rates.\par}
 
 This analysis requires retraction flags (Retraction Watch), disruption
 scores (SciSciNet), citation counts (OpenAlex), and ontology mapping---a
@@ -87,9 +86,14 @@ high-cited papers. The most extreme outlier---a paper with 257,887 citations
 in S2AG and zero in OpenAlex---illustrates how coverage and methodology
 differences can produce dramatic record-level discrepancies.
 
-This three-way comparison is \emph{only possible} when parallel citation
-counts from independent sources coexist in a single queryable table. No
-pairwise API-based comparison can reproduce this analysis at scale.
+Whereas Section~\ref{sec:validation} uses these correlations to validate
+data integrity, this vignette illustrates the analytical workflow
+itself---showing how researchers can diagnose source-specific biases and
+select the citation count most appropriate for their study design. The
+three-way comparison requires parallel citation counts from independent
+sources to coexist in a single queryable table---a configuration that
+would be impractical to assemble through pairwise API-based comparisons
+at this scale.
 
 Figure~\ref{fig:vignettes} summarizes the results of all four vignettes.
 
@@ -112,26 +116,19 @@ context for large language model (LLM) based coding agents. This
 document provides every table name, column, data type, row count, and
 size tier, along with nine cross-dataset join strategies and common query
 recipes---all in a format optimized for LLM consumption rather than
-narrative reading.
-
-The structured documentation---which includes column types, row counts,
-size tiers, and nine cross-dataset join strategies---is designed to reduce
-the schema-discovery burden that typically limits LLM-based data
-exploration. For example, a query such as ``find the most disruptive
+narrative reading. For example, a query such as ``find the most disruptive
 papers in computer science that have open-source code and check their
 retraction status'' requires joining four schemas (\texttt{sciscinet},
 \texttt{xref}, \texttt{pwc}, \texttt{retwatch}) with appropriate DOI
 normalization; \texttt{SCHEMA.md} consolidates the metadata needed to
 formulate such joins.
 
-This design reflects a deliberate choice: rather than building a custom
-natural-language interface (which would require maintenance and constrain
-the query space), we provide structured documentation that any
-general-purpose LLM agent can consume. As LLM capabilities evolve, the
-same schema reference remains useful without modification. Systematic
-evaluation of text-to-SQL performance across LLM providers is beyond the
-scope of this data descriptor; here we describe the documentation
-infrastructure rather than claiming specific agent accuracy.
+Rather than building a custom natural-language interface (which would
+require maintenance and constrain the query space), we provide structured
+documentation that any general-purpose LLM agent can consume. As LLM
+capabilities evolve, the same schema reference remains useful without
+modification. Systematic evaluation of text-to-SQL performance across
+LLM providers is beyond the scope of this data descriptor.
 
 \subsection{Limitations and Extensibility}
 

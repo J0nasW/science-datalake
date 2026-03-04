@@ -86,6 +86,7 @@ configs:
 </p>
 
 <p align="center">
+  <a href="https://arxiv.org/abs/2603.03126"><img src="https://img.shields.io/badge/arXiv-2603.03126-b31b1b" alt="arXiv"></a>
   <a href="https://github.com/J0nasW/science-datalake"><img src="https://img.shields.io/badge/GitHub-Repository-181717?logo=github" alt="GitHub"></a>
   <a href="https://doi.org/10.57967/hf/7850"><img src="https://img.shields.io/badge/DOI-10.57967%2Fhf%2F7850-blue" alt="DOI"></a>
   <a href="https://github.com/J0nasW/science-datalake/blob/main/SCHEMA.md"><img src="https://img.shields.io/badge/LLM--Ready-SCHEMA.md-purple" alt="LLM-Ready"></a>
@@ -248,16 +249,21 @@ python scripts/materialize_unified_papers.py
 
 ## Citation
 
+If you use the Science Data Lake, please cite the paper:
+
 ```bibtex
-@dataset{wilinski2026sciencedatalake,
-  title={Science Data Lake: A Unified, Portable Data Lake for Full-Lifecycle Scholarly Analysis},
-  author={Wilinski, Jonas},
-  year={2026},
-  publisher={HuggingFace},
-  url={https://huggingface.co/datasets/J0nasW/science-datalake},
-  doi={10.57967/hf/7850}
+@article{wilinski2026sciencedatalake,
+  title   = {The Science Data Lake: A Unified Open Infrastructure Integrating
+             293 Million Papers Across Eight Scholarly Sources with
+             Embedding-Based Ontology Alignment},
+  author  = {Wilinski, Jonas},
+  journal = {arXiv preprint arXiv:2603.03126},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2603.03126}
 }
 ```
+
+Dataset DOI: [10.57967/hf/7850](https://doi.org/10.57967/hf/7850)
 
 ## License
 

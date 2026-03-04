@@ -22,6 +22,10 @@
 \usepackage{enumitem}
 \usepackage{microtype}
 
+% === Prevent widows and orphans ===
+\widowpenalty=10000
+\clubpenalty=10000
+
 % === TikZ libraries ===
 \usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,calc,backgrounds}
 
@@ -45,21 +49,18 @@
 \title{The Science Data Lake: A Unified Open Infrastructure\\ Integrating 293~Million Papers Across Eight Scholarly\\ Sources with Embedding-Based Ontology Alignment}
 
 \author{
-  Jonas Wilinski\textsuperscript{*}\\
+  Jonas Wilinski\thanks{Corresponding author.}\\
   \textit{Hamburg University of Technology (TUHH), Hamburg, Germany}\\
   \texttt{jonas.wilinski@tuhh.de}\\
   \small ORCID: \href{https://orcid.org/0009-0005-4672-7197}{0009-0005-4672-7197}
 }
-\renewcommand{\thefootnote}{}
-\footnotetext{\textsuperscript{*}Corresponding author.}
 
-\date{February 2026}
+\date{March 2026}
 
 % ============================================================
 \begin{document}
 
 \maketitle
-
 % --- Abstract ---
 \input{abstract}
 
@@ -99,7 +100,7 @@ Writing~---~original draft, Writing~---~review \& editing.
 
 % --- Competing Interests ---
 \section*{Competing Interests}
-The authors declare no competing interests.
+The author declares no competing interests.
 
 % --- References ---
 \bibliographystyle{unsrtnat}

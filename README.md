@@ -3,6 +3,7 @@
 </p>
 
 <p align="center">
+  <a href="https://arxiv.org/abs/2603.03126"><img src="https://img.shields.io/badge/arXiv-2603.03126-b31b1b" alt="arXiv"></a>
   <a href="https://huggingface.co/datasets/J0nasW/science-datalake"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20HuggingFace-Dataset-yellow" alt="HuggingFace Dataset"></a>
   <a href="https://doi.org/10.57967/hf/7850"><img src="https://img.shields.io/badge/DOI-10.57967%2Fhf%2F7850-blue" alt="DOI"></a>
   <a href="https://github.com/J0nasW/science-datalake/blob/main/LICENSE"><img src="https://img.shields.io/badge/Code%20License-MIT-green" alt="License: MIT"></a>
@@ -12,13 +13,13 @@
 
 # Science Data Lake
 
-Portable data lake of 480M+ scientific publications from eight complementary datasets, plus 13 scientific ontologies (1.3M terms), queryable via DuckDB.
+Portable data lake of 480M+ scientific publications from eight complementary datasets, 13 scientific ontologies (1.3M terms), and a unified full-text corpus (13.2M papers), queryable via DuckDB.
 
-**Links:** [HuggingFace Dataset](https://huggingface.co/datasets/J0nasW/science-datalake) | [DOI: 10.57967/hf/7850](https://doi.org/10.57967/hf/7850) | [SCHEMA.md (LLM reference)](SCHEMA.md) | [Author website](https://wilinski.me)
+**Links:** [Paper (arXiv:2603.03126)](https://arxiv.org/abs/2603.03126) | [HuggingFace Dataset](https://huggingface.co/datasets/J0nasW/science-datalake) | [DOI: 10.57967/hf/7850](https://doi.org/10.57967/hf/7850) | [SCHEMA.md (LLM reference)](SCHEMA.md) | [Author website](https://wilinski.me)
 
 ## What This Is
 
-Eight scholarly datasets and 13 scientific ontologies unified under a single DuckDB interface with 148 views across 20+ schemas:
+Eight scholarly datasets, 13 scientific ontologies, and a unified full-text corpus under a single DuckDB interface with 159 views across 20+ schemas:
 
 - **S2AG** (Semantic Scholar) - 231M papers, 2.9B citation edges with context sentences, full text for 12M papers
 - **SciSciNet v2** - 250M papers with disruption index, atypicality, sleeping beauty, patent/funding links
@@ -28,8 +29,9 @@ Eight scholarly datasets and 13 scientific ontologies unified under a single Duc
 - **Reliance on Science** - 47.8M patent-to-paper citations (global)
 - **PreprintToPaper** - 146K bioRxiv/medRxiv preprint-to-publication mappings
 - **Scientific Ontologies** - 13 ontologies with 1.3M terms: MeSH (721K biomedical), ChEBI (205K chemistry), NCIT (204K cancer), GO (48K biology), AGROVOC (42K agriculture), HPO (20K phenotypes), CSO (15K CS), DOID (15K diseases), STW (8K economics), MSC2020 (7K math), UNESCO (4.5K), PhySH (4K physics), EDAM (3.5K bioinformatics)
+- **Unified Full-Text** - 38M papers (13.2M with body text) from S2ORC, peS2o, PMC OA, and arXiv, deduplicated per-DOI with source priority
 
-All data lives as Parquet files on disk (~960 GB). The `datalake.duckdb` file (~268KB) stores only view definitions pointing to those files. This makes it fully portable: mount the drive, regenerate views, query.
+All data lives as Parquet files on disk (~1.3 TB). The `datalake.duckdb` file (~268KB) stores only view definitions pointing to those files. This makes it fully portable: mount the drive, regenerate views, query.
 
 ## Snapshot Dates
 
@@ -45,6 +47,7 @@ Each source was downloaded at a specific point in time. The data in this release
 | Reliance on Science | v64 | Zenodo record |
 | PreprintToPaper | 2025-06 | Zenodo record |
 | 13 Ontologies | 2026-02 | Downloaded from official sources |
+| Unified Full-Text | 2026-03-03 | S2ORC, peS2o, PMC OA, arXiv (unarXive + OCR) |
 
 All snapshots can be refreshed using the update pipeline — see [Keeping the Data Lake Current](#keeping-the-data-lake-current) below.
 
@@ -60,6 +63,7 @@ datalake.duckdb (268KB, view definitions only)
   ├── ros.*           → datasets/reliance_on_science/parquet/*.parquet (2.7 GB)
   ├── p2p.*           → datasets/preprint_to_paper/parquet/*.parquet (735 MB)
   ├── {ont}.*         → datasets/{ont}/parquet/*.parquet (13 ontologies, 56 MB)
+  ├── fulltext.*      → datasets/fulltext/parquet/**/*.parquet    (361 GB)
   └── xref.doi_map    → UNION ALL across datasets (normalized DOIs, 588M rows)
 ```
 
@@ -87,7 +91,7 @@ python scripts/datalake_cli.py shell                     # Interactive DuckDB sh
 | Need | Best Dataset | Why |
 |------|-------------|-----|
 | Citation contexts & intents | S2AG | Only dataset with in-text citation sentences |
-| Full paper text | S2AG (s2orc) | 12M open access papers with body text |
+| Full paper text | **fulltext.papers** | 13.2M full-text papers from 4 sources, deduplicated per-DOI |
 | AI paper summaries | S2AG (tldrs) | 70M one-sentence TLDRs |
 | Disruption / novelty metrics | SciSciNet | CD index, atypicality, sleeping beauty |
 | Normalized citation impact | SciSciNet | Field-year normalized scores, hit paper flags |
@@ -214,6 +218,22 @@ This data lake is designed to be queryable by LLM-based coding agents (Claude Co
 - `pip install duckdb pyarrow` (see `requirements.txt`)
 - A local or external SSD with sufficient storage
 
+## Citation
+
+If you use the Science Data Lake in your research, please cite:
+
+```bibtex
+@article{wilinski2026sciencedatalake,
+  title   = {The Science Data Lake: A Unified Open Infrastructure Integrating
+             293 Million Papers Across Eight Scholarly Sources with
+             Embedding-Based Ontology Alignment},
+  author  = {Wilinski, Jonas},
+  journal = {arXiv preprint arXiv:2603.03126},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2603.03126}
+}
+```
+
 ## Licenses
 
 | Dataset | License | Notes |
@@ -233,3 +253,4 @@ This data lake is designed to be queryable by LLM-based coding agents (Claude Co
 | Retraction Watch | Open (via Crossref) | Open access |
 | Reliance on Science | CC BY-NC 4.0 | Non-commercial use |
 | PreprintToPaper | Open Access | Open access |
+| Unified Full-Text | Mixed | Per-source: S2 ToS, ODC-By, CC variants, non-exclusive |

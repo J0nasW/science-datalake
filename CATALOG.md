@@ -6,8 +6,9 @@
 
 A unified, portable data lake of scientific publication data.
 Three core bibliometric datasets (~250M+ papers each), plus Papers With Code (ML method-task-dataset-code mappings),
-the Computer Science Ontology (14K+ CS topics), Retraction Watch (69K retraction records), Reliance on Science
-(47.8M patent→paper citations), and PreprintToPaper (146K preprint→publication mappings), all queryable via DuckDB.
+13 scientific ontologies (1.3M terms), Retraction Watch (69K retraction records), Reliance on Science
+(47.8M patent→paper citations), PreprintToPaper (146K preprint→publication mappings), and a unified full-text
+corpus (13.2M full-text papers from 4 sources), all queryable via DuckDB.
 
 ## Quick Start
 
@@ -45,7 +46,8 @@ python scripts/datalake_cli.py update openalex  # download + convert + views
 | **SciSciNet** | 250M | Science of Science metrics | Disruption index, atypicality, sleeping beauty, normalized citations, patent/funding links |
 | **OpenAlex** | 479M | Comprehensive scholarly catalog | Broadest coverage, CC0 license, institution/funder/topic hierarchies, incremental updates |
 | **Papers With Code** | 513K | ML methods, tasks, datasets, code | Method-task-dataset mappings, GitHub repos, patent citations, embeddings, OpenAlex/S2AG links |
-| **Scientific Ontologies** | ~33K terms | 3 domain ontologies (converted) | CSO (14.6K CS topics), DOID (14.5K diseases), EDAM (3.5K bioinformatics) |
+| **Scientific Ontologies** | ~1.3M terms | 13 domain ontologies (converted) | MeSH, ChEBI, NCIT, GO, AGROVOC, HPO, CSO, DOID, STW, MSC2020, UNESCO, PhySH, EDAM |
+| **Unified Full-Text** | 38M | Full paper text from 4 open sources | 13.2M full-text, 24.8M abstracts; deduplicated per-DOI (PMC > S2ORC > peS2o > arXiv) |
 | **Retraction Watch** | 69K | Retracted/corrected papers | Retraction reasons, dates, journals, data quality flag layer |
 | **Reliance on Science** | 47.8M | Patent→paper citations | Global patent-science linkages with confidence scores, institution types |
 | **PreprintToPaper** | 146K | Preprint→publication mapping | bioRxiv/medRxiv to journal DOIs, timing, publication status |
@@ -616,6 +618,114 @@ ORDER BY s.citationcount DESC LIMIT 20;
 
 ---
 
+## Unified Full-Text Papers
+
+**Updated:** 2026-03-03 | **Size:** 130 GB (unified), 361 GB (all sources) | **Format:** Parquet (ZSTD) | **License:** Mixed
+
+Aggregated full-text scientific papers from 4 open sources, deduplicated per-DOI with source priority. Designed for LLM training, text mining, and full-text search.
+
+### Schema: `fulltext`
+
+| View | Rows | Description |
+|------|------|-------------|
+| `papers` | 38.0M | **Deduplicated** — one row per DOI, best source version |
+| `all_sources` | 49.6M | UNION ALL of all sources (may have duplicate DOIs) |
+| `s2orc` | 11.4M | S2ORC full-text (from S2AG, joined for DOIs) |
+| `pes2o` | 33.3M | peS2o V2 (mostly abstracts, 1.1M full-text) |
+| `pmc` | 4.8M | PMC Open Access (gold-standard JATS XML) |
+| `arxiv` | 162K | arXiv (unarXive open subset, pre-processed LaTeX) |
+
+### Source Priority & Stats
+
+When a DOI appears in multiple sources, the highest-priority version wins:
+
+| Priority | Source | Total | Full-text | Median length | Parquet |
+|----------|--------|-------|-----------|---------------|---------|
+| 1 | PMC | 4.8M | 4.7M | 30,372 chars | 47 GB |
+| 2 | S2ORC | 7.4M | 7.4M | 23,876 chars | 101 GB |
+| 3 | peS2o | 25.8M | 1.1M | 1,239 chars | 81 GB |
+| 4 | arXiv | 40K | 40K | 35,400 chars | 2.2 GB |
+| — | **Unified** | **38.0M** | **13.2M** | — | **130 GB** |
+
+### Key Columns (all views share this schema)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `doi` | VARCHAR | Lowercase DOI, no prefix. Primary dedup key. |
+| `source` | VARCHAR | `pmc`, `s2orc`, `pes2o`, `arxiv` |
+| `title` | VARCHAR | Paper title |
+| `abstract` | VARCHAR | Abstract (empty if unavailable) |
+| `text` | VARCHAR | Full body text (empty if abstract-only) |
+| `license` | VARCHAR | License string (NULL if unknown) |
+| `year` | INTEGER | Publication year |
+| `source_id` | VARCHAR | Original ID (corpusid, pmcid, arxiv_id, etc.) |
+| `text_length` | INTEGER | Character count of `text` |
+| `language` | VARCHAR | ISO 639-1 code or NULL |
+| `has_full_text` | BOOLEAN | `true` if body text present |
+
+### Common Queries
+
+```sql
+-- Full-text paper counts per source
+SELECT source, COUNT(*) AS total,
+       SUM(CASE WHEN has_full_text THEN 1 ELSE 0 END) AS full_text,
+       APPROX_QUANTILE(text_length, 0.5)::INT AS median_len
+FROM fulltext.papers GROUP BY 1 ORDER BY total DESC;
+
+-- Get full text for a specific paper
+SELECT source, title, text_length, LEFT(text, 500) AS preview
+FROM fulltext.papers WHERE doi = '10.1038/nature12373';
+
+-- Full-text papers with high citation impact
+SELECT f.doi, f.source, f.text_length, p.citationcount, sc.disruption
+FROM fulltext.papers f
+JOIN s2ag.papers p ON f.doi = p.doi
+JOIN sciscinet.papers sc ON f.doi = sc.doi
+WHERE f.has_full_text AND p.citationcount > 100
+ORDER BY p.citationcount DESC LIMIT 20;
+
+-- Year coverage for full-text papers
+SELECT year, COUNT(*) AS n, APPROX_QUANTILE(text_length, 0.5)::INT AS med_len
+FROM fulltext.papers WHERE has_full_text AND year BETWEEN 2000 AND 2026
+GROUP BY year ORDER BY year;
+
+-- Compare how many sources have text for a given DOI
+SELECT doi, COUNT(*) AS sources, MAX(text_length) AS max_len
+FROM fulltext.all_sources
+WHERE doi IN ('10.1038/nature12373', '10.1126/science.aaa8685')
+GROUP BY doi;
+```
+
+### Pipeline
+
+```bash
+# Download raw data
+python scripts/download_fulltext.py --source pmc    # PMC FTP bulk
+python scripts/download_fulltext.py --source pes2o  # HuggingFace
+
+# Convert to unified parquet schema
+python scripts/convert_fulltext.py --source s2orc    # Map from existing s2ag.s2orc
+python scripts/convert_fulltext.py --source pes2o    # Parse JSONL, map DOIs via S2AG
+python scripts/convert_fulltext.py --source pmc      # Parse JATS XML with lxml
+python scripts/convert_fulltext.py --source arxiv    # Parse unarXive JSONL
+
+# Deduplicate across sources
+python scripts/materialize_fulltext.py
+
+# Rebuild DuckDB views
+python scripts/create_unified_db.py
+```
+
+### Notes
+
+- DOI format matches S2AG (lowercase, no prefix). arXiv papers without publisher DOIs use synthetic `10.48550/arxiv.{id}`.
+- 99.9% of fulltext papers link to `xref.unified_papers` via DOI.
+- PMC produces the highest quality text (structured JATS XML). arXiv has the longest texts (LaTeX source).
+- `has_full_text = false` means only abstract/title are available. Use this flag to filter for actual full papers.
+- The `text` column can be very large (up to 8.7M chars for some arXiv papers). Always use `text_length` for filtering before loading text.
+
+---
+
 ## Cross-Dataset Queries (xref schema)
 
 ### DOI-Based Lookup
@@ -746,8 +856,16 @@ science_datalake/
 │   ├── reliance_on_science/
 │   │   ├── parquet/*.parquet     # 3 tables (2.7 GB)
 │   │   └── meta.json
-│   └── preprint_to_paper/
-│       ├── parquet/*.parquet     # 2 tables (735 MB)
+│   ├── preprint_to_paper/
+│   │   ├── parquet/*.parquet     # 2 tables (735 MB)
+│   │   └── meta.json
+│   └── fulltext/
+│       ├── parquet/s2orc/        # S2ORC mapped (101 GB)
+│       ├── parquet/pes2o/        # peS2o from HuggingFace (81 GB)
+│       ├── parquet/pmc/          # PMC OA from FTP (47 GB)
+│       ├── parquet/arxiv/        # arXiv/unarXive (2.2 GB)
+│       ├── parquet/unified/      # Deduplicated, best per DOI (130 GB)
+│       ├── raw/                  # Downloaded source files
 │       └── meta.json
 └── scripts/
     ├── config.py                 # Path resolution
@@ -757,7 +875,11 @@ science_datalake/
     ├── convert_openalex.py       # NDJSON → Parquet converter (with --compact)
     ├── download_s2ag.py          # S2AG API downloader
     ├── convert_s2ag.py           # S2AG conversion
-    └── download_sciscinet.py     # GCS downloader
+    ├── download_sciscinet.py     # GCS downloader
+    ├── download_fulltext.py      # Fulltext source downloader (peS2o, PMC, arXiv)
+    ├── convert_fulltext.py       # Convert all sources to unified parquet
+    ├── materialize_fulltext.py   # Deduplicate across sources
+    └── hpc_arxiv_ocr.py          # HPC pipeline: arXiv PDF→OCR
 ```
 
 ---
@@ -776,3 +898,4 @@ science_datalake/
 | 2026-02-16 | PreprintToPaper | Downloaded and converted 145.5K preprint-publication mappings |
 | 2026-02-16 | DOID + EDAM | Converted Disease Ontology (14.5K terms) and EDAM (3.5K terms) to parquet |
 | 2026-02-17 | OpenAlex | All 23 tables converted (479M works, 3B refs, 1.3B authorships). Compaction in progress. |
+| 2026-03-03 | Unified Full-Text | Phase 1-4: S2ORC (7.4M), peS2o (25.8M), PMC OA (4.8M), arXiv/unarXive (40K) → 38M unified (13.2M full-text, 130 GB). arXiv OCR (218K papers) in progress on HPC. |

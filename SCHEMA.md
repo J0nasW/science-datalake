@@ -2,7 +2,7 @@
 
 > LLM-optimized reference for querying the science data lake.
 > Connection: `duckdb.connect('datalake.duckdb', read_only=True)`
-> Schemas: `s2ag`, `sciscinet`, `openalex`, `pwc`, 13 ontology schemas (`mesh`, `go`, `chebi`, `ncit`, `hpo`, `agrovoc`, `cso`, `doid`, `edam`, `stw`, `msc2020`, `physh`, `unesco`), `retwatch`, `ros`, `p2p`, `xref` | 148 views (including 8 backward-compat aliases in `main`)
+> Schemas: `s2ag`, `sciscinet`, `openalex`, `pwc`, `fulltext`, 13 ontology schemas (`mesh`, `go`, `chebi`, `ncit`, `hpo`, `agrovoc`, `cso`, `doid`, `edam`, `stw`, `msc2020`, `physh`, `unesco`), `retwatch`, `ros`, `p2p`, `xref` | 159 views (including 8 backward-compat aliases in `main`)
 
 ---
 
@@ -149,6 +149,12 @@
 | **ros.patent_paper_pairs_plus** | 548K | S | Extended pairs with institutional metadata |
 | **p2p.preprint_to_paper** | 146K | S | Preprint→publication DOI mapping with status |
 | **p2p.preprint_to_paper_grayzone** | 299 | S | Manually annotated suspected matches |
+| **fulltext.papers** | 38.0M | VL | Deduplicated full-text papers (best version per DOI from 4 sources) |
+| **fulltext.all_sources** | 49.6M | VL | All full-text sources combined (UNION ALL, may have duplicate DOIs) |
+| **fulltext.s2orc** | 11.4M | L | S2ORC full-text papers |
+| **fulltext.pes2o** | 33.3M | VL | peS2o papers (mostly abstracts) |
+| **fulltext.pmc** | 4.8M | L | PMC Open Access full-text papers |
+| **fulltext.arxiv** | 162K | S | arXiv full-text papers (unarXive) |
 | **xref.doi_map** | 588M | VL | Cross-dataset DOI lookup (normalized, no prefix) |
 | **xref.unified_papers** | 293M | VL | Pre-joined cross-source paper table with coverage flags |
 | **xref.topic_ontology_map** | 16.2K | S | OpenAlex topic → ontology term alignment via BGE-large-en-v1.5 embeddings (cosine sim ≥ 0.65) + exact matching; 99.8% topic coverage |
@@ -1103,6 +1109,86 @@ GROUP BY months ORDER BY months;
 
 ---
 
+## fulltext (Unified Full-Text Papers)
+
+**Size:** 130 GB unified (361 GB total across sources) | **Sources:** S2ORC, peS2o, PMC OA, arXiv | **License:** Mixed (per-source)
+
+Aggregated full-text scientific papers from 4 open sources, deduplicated per-DOI. Priority: PMC > S2ORC > peS2o > arXiv. 38.0M papers (13.2M with full body text, 24.8M abstract-only).
+
+### fulltext.papers (38.0M rows, VERY_LARGE) — **primary interface**
+
+Deduplicated: one row per DOI, keeping the best source version.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `doi` | VARCHAR | Lowercase DOI without prefix. Primary dedup key. |
+| `source` | VARCHAR | Winning source: `pmc`, `s2orc`, `pes2o`, `arxiv` |
+| `title` | VARCHAR | Paper title |
+| `abstract` | VARCHAR | Abstract (may be empty) |
+| `text` | VARCHAR | Full body text (empty string if abstract-only) |
+| `license` | VARCHAR | License string (NULL if unknown) |
+| `year` | INTEGER | Publication year |
+| `source_id` | VARCHAR | Original ID (corpusid, pmcid, arxiv_id, etc.) |
+| `text_length` | INTEGER | Character count of `text` |
+| `language` | VARCHAR | ISO 639-1 code (NULL if not detected) |
+| `has_full_text` | BOOLEAN | `true` if body text present beyond abstract |
+
+**Source winner breakdown:**
+- peS2o: 25.8M papers (1.1M full-text), median 1,239 chars
+- S2ORC: 7.4M papers (all full-text), median 23,876 chars
+- PMC: 4.8M papers (4.7M full-text), median 30,372 chars
+- arXiv: 40K papers (all full-text), median 35,400 chars
+
+### fulltext.all_sources (49.6M rows, VERY_LARGE)
+
+UNION ALL of per-source views. Contains duplicate DOIs across sources.
+
+Same schema as `fulltext.papers`.
+
+### Per-source views
+
+- `fulltext.s2orc` (11.4M) — from S2AG S2ORC, joined with papers for DOIs
+- `fulltext.pes2o` (33.3M) — from AllenAI peS2o V2
+- `fulltext.pmc` (4.8M) — from PMC Open Access JATS XML
+- `fulltext.arxiv` (162K) — from unarXive open subset
+
+### Common Queries
+
+```sql
+-- Get full text for a paper by DOI
+SELECT source, title, text_length, has_full_text
+FROM fulltext.papers WHERE doi = '10.1038/nature12373';
+
+-- Full-text papers per source
+SELECT source, COUNT(*) AS total, SUM(CASE WHEN has_full_text THEN 1 ELSE 0 END) AS full_text
+FROM fulltext.papers GROUP BY 1;
+
+-- Join full text with citation metrics
+SELECT f.doi, f.source, f.text_length, p.citationcount, sc.disruption
+FROM fulltext.papers f
+JOIN s2ag.papers p ON f.doi = p.doi
+JOIN sciscinet.papers sc ON f.doi = sc.doi
+WHERE f.has_full_text AND f.text_length > 10000
+LIMIT 20;
+
+-- Year distribution of full-text papers
+SELECT year, COUNT(*) AS n FROM fulltext.papers
+WHERE has_full_text AND year BETWEEN 2000 AND 2026
+GROUP BY year ORDER BY year;
+
+-- Compare text across sources for the same DOI
+SELECT source, text_length FROM fulltext.all_sources
+WHERE doi = '10.1038/nature12373';
+```
+
+**Dedup priority:** PMC > S2ORC > peS2o > arXiv > bioRxiv > CORE. Tie-break: longest `text_length`.
+
+**DOI format:** Lowercase, no prefix (matches S2AG). arXiv papers without publisher DOIs use synthetic `10.48550/arxiv.{id}`.
+
+**Primary key:** `doi` (VARCHAR, unique in `fulltext.papers`) | **License:** Mixed per-source | **99.9% overlap** with `xref.unified_papers`
+
+---
+
 ## xref (Cross-Reference)
 
 ### xref.doi_map (VERY_LARGE)
@@ -1132,8 +1218,10 @@ Normalizes DOIs from all datasets to lowercase, no-prefix format.
 
 **LARGE (10-100M rows):** Always use WHERE clauses. LIMIT recommended.
 - abstracts, tldrs, s2orc, link_patents, link_twitter, twitter_metadata, ros.pcs_oa (47.8M)
+- fulltext: s2orc (11.4M), pmc (4.8M)
 
 **VERY_LARGE (>100M rows):** Always filter aggressively. Never SELECT * without WHERE + LIMIT.
+- fulltext: papers (38.0M), all_sources (49.6M), pes2o (33.3M)
 - s2ag: papers (231M), citations (2.9B), paper_ids (519M), authors (112M)
 - sciscinet: papers (250M), paper_details (250M), paper_refs (2.5B), paper_fields (1.3B), paper_authors (773M), hit_papers (570M, 702M), normalized_citations (570M, 702M), paper_sources (204M), authors (100M)
 - openalex: works (479M), works_referenced_works (3.01B), works_authorships (1.32B), works_topics (910M), works_locations (612M), works_ids (479M), works_biblio (479M), works_open_access (479M), works_counts_by_year (443M), works_best_oa_location (210M), authors (108M), authors_counts_by_year (302M)

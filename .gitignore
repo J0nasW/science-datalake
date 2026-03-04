@@ -50,4 +50,15 @@ Thumbs.db
 datasets/xref/topic_ontology_embeddings/
 
 # Custom
-paper/endorsement_outreach.md
+paper/arxiv_submission/
+paper/arxiv_submission.zip
+paper/social/
+
+# Claude
+.claude/
+
+# HPC
+scripts/hpc/*
+scripts/hpc
+
+manifests/

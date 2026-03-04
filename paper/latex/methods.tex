@@ -24,9 +24,11 @@ Papers with Code            & 513K  & CC BY-SA & Code repositories, tasks, datas
 Retraction Watch            & 69K   & Open     & Retraction reasons and dates \\
 Reliance on Science (RoS)   & 47.8M & CC BY-NC & Patent--paper citation pairs \\
 Preprint-to-Published (P2P) & 146K  & Open     & bioRxiv/medRxiv DOI to published DOI \\
-Crossref                    & ---   & Open     & DOI metadata, reference lists \\
+Crossref                    & ---\textsuperscript{a}   & Open     & DOI metadata, reference lists \\
 \bottomrule
 \end{tabularx}
+\vspace{2pt}
+{\footnotesize \textsuperscript{a}Crossref serves as a metadata enrichment and DOI validation layer rather than a standalone record source; no independent record count is attributed.}
 \end{table}
 
 \textbf{Semantic Scholar Academic Graph (S2AG)}~\cite{kinney2023s2ag} provides
@@ -100,8 +102,8 @@ bridge across sources---\texttt{doi\_map} (DOI normalization), \texttt{unified\_
 
 We chose DuckDB over traditional server-based systems such as PostgreSQL for
 three reasons: its embeddable, serverless design requires no installation or
-administration; its columnar engine is optimized for the analytical (OLAP) query
-patterns typical of bibliometric research; and---crucially---it reads Parquet
+administration; its columnar engine is optimized for the online analytical processing (OLAP) query
+patterns typical of bibliometric research; and it reads Parquet
 files directly through SQL views without importing data, keeping the database
 file under 300\,KB while exposing nearly 1\,TB of data.
 
@@ -215,14 +217,16 @@ Standard Thesaurus for Economics
 (STW)\footnote{\url{https://zbw.eu/stw/}}, Physics Subject Headings
 (PhySH)\footnote{\url{https://physh.org/}}, and the Mathematics Subject
 Classification (MSC2020)\footnote{\url{https://msc2020.org/}}. Each ontology was converted
-from its native format (OBO, SKOS/RDF, N-Triples, CSV) to a uniform Parquet
-representation using format-specific parsers, and simultaneously loaded into an
-Oxigraph RDF triple store for SPARQL queries.
+from its native format (Open Biomedical Ontologies (OBO), Simple Knowledge
+Organization System (SKOS)/Resource Description Framework (RDF), N-Triples,
+CSV) to a uniform Parquet representation using format-specific parsers, and
+simultaneously loaded into an Oxigraph RDF triple store for SPARQL queries.
 
 We employed a hybrid alignment strategy. For the 10~smaller ontologies (291K
-terms including synonyms), we computed dense embeddings using the BGE-large-en-v1.5
-model~\cite{xiao2024bge} (335M parameters, 1024 dimensions) and performed
-nearest-neighbour search via a FAISS index~\cite{johnson2021faiss}. For the three largest ontologies (MeSH, ChEBI, NCIT), which
+terms including synonyms), we computed dense embeddings using the BAAI General Embedding
+(BGE) large-en-v1.5 model~\cite{xiao2024bge} (335M parameters, 1024
+dimensions) and performed nearest-neighbour search via a Facebook AI
+Similarity Search (FAISS) index~\cite{johnson2021faiss}. For the three largest ontologies (MeSH, ChEBI, NCIT), which
 together account for 1.1M terms and would dominate the embedding space, we used
 exact string matching to ensure precision.
 
@@ -266,20 +270,24 @@ matching in all cases for consistency.
 \begin{table}[t]
 \centering
 \caption{Comparison of ontology alignment methods. All methods use the same
-topic and ontology term sets; mappings are counted at a similarity threshold
-of $\geq 0.65$. Precision, recall, and F1 are computed against a stratified
-300-pair gold-standard annotation set (see Section~\ref{sec:validation}).
-\textsuperscript{$\dagger$}Metrics to be filled after annotation.}
+topic and ontology term sets. Mappings and topic counts are at each method's
+operating threshold. Precision (P), recall (R), and F1 are evaluated against
+a stratified 300-pair gold-standard annotation set (see
+Section~\ref{sec:validation}); a mapping is counted as correct only if the
+annotator labelled it \emph{correct} (strict; \emph{partial} counts as
+false positive). F1 is computed from unrounded P and R; rounding
+the displayed values may yield slightly different results.}
 \label{tab:baselines}
 \small
 \begin{tabular}{@{}l r r r r r@{}}
 \toprule
 \textbf{Method} & \textbf{Mappings} & \textbf{Topics} & \textbf{P} & \textbf{R} & \textbf{F1} \\
 \midrule
-Jaro--Winkler ($\geq 0.90$) & 937    & 675   & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- \\
-TF-IDF cosine               & 4,861  & 2,620 & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- \\
-BM25                        & 14,929 & 4,513 & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- \\
-BGE-large (ours)            & 16,150 & 4,509 & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- & \textsuperscript{$\dagger$}--- \\
+Jaro--Winkler ($\geq 0.90$) & 937    & 675   & 0.80 & 0.52 & 0.63 \\
+TF-IDF cosine               & 4,861  & 2,620 & 0.61 & 0.84 & 0.71 \\
+BM25                        & 14,929 & 4,513 & 0.45 & 0.92 & 0.61 \\
+BGE-large (ours)            & 16,150 & 4,509 & 0.38 & 1.00 & 0.55 \\
+BGE-large ($\geq 0.85$)    & 2,527  & 1,647 & 0.67 & 0.89 & 0.77 \\
 \bottomrule
 \end{tabular}
 \end{table}

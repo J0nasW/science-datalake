@@ -43,11 +43,18 @@ PubGraph~\cite{ahrabian2023pubgraph} merges Wikidata, OpenAlex, and Semantic
 Scholar into a unified knowledge graph using the Wikidata ontology, but
 collapses source-level schemas, sacrificing the ability to compare how different
 sources describe the same paper. SemOpenAlex~\cite{farber2023semopenalex}
-re-encodes OpenAlex as 26~billion RDF triples, offering semantic-web
+re-encodes OpenAlex as 26~billion Resource Description Framework (RDF)
+triples, offering semantic-web
 interoperability but remaining a single-source resource.
 Dimensions~\cite{hook2018dimensions} provides SQL-queryable access to a
 comprehensive commercial database, but its proprietary nature limits
-reproducibility.
+reproducibility. The Open Research Knowledge Graph
+(ORKG)~\cite{jaradeh2019orkg} takes a complementary approach, focusing on
+structured descriptions of \emph{research contributions} (methods, results,
+datasets) as curated RDF triples rather than bibliometric metadata; it
+federates metadata from Crossref, Semantic Scholar, and OpenAIRE but does
+not provide record-level citation counts, scientometric indicators, or
+cross-source comparison of the same paper across independent databases.
 
 \begin{table}[t]
 \centering
@@ -63,6 +70,7 @@ SciSciNet~\cite{lin2023sciscinet}        & 1+ & \texttimes & ---      & \checkma
 PubGraph~\cite{ahrabian2023pubgraph}     & 3  & \checkmark & Merged   & \checkmark & Collapses into unified Wikidata schema; source-level provenance lost \\[2pt]
 SemOpenAlex~\cite{farber2023semopenalex} & 1  & \texttimes & ---      & \checkmark & Single source (OpenAlex only); requires SPARQL expertise \\[2pt]
 Dimensions~\cite{hook2018dimensions}     & 1  & \texttimes & ---      & \texttildelow & Commercial; limited programmatic access; not fully reproducible \\[2pt]
+ORKG~\cite{jaradeh2019orkg}              & 3+ & \checkmark & KG       & \checkmark & Focuses on curated research contributions, not bibliometric record-level comparison \\[2pt]
 \textbf{Science Data Lake}               & \textbf{8} & \checkmark & \textbf{Preserved} & \checkmark & Requires {\raise.17ex\hbox{$\scriptstyle\sim$}}1\,TB local storage; snapshot-based \\
 \bottomrule
 \end{tabularx}
@@ -82,8 +90,9 @@ scripts that auto-discover entity types and column structures rather than relyin
 on hard-coded schemas, ensuring the infrastructure remains current as sources
 change. \textbf{Second}, an \emph{embedding-based ontology alignment}
 method that bridges OpenAlex's flat topic taxonomy to 13~formal scientific
-ontologies using BGE-large sentence embeddings~\cite{xiao2024bge}, achieving a
-17-fold improvement over string-matching baselines. \textbf{Third}, a
+ontologies using BGE-large sentence embeddings~\cite{xiao2024bge}, achieving
+$F1 = 0.77$ at the recommended operating point and outperforming TF-IDF,
+BM25, and Jaro--Winkler baselines on a gold-standard evaluation. \textbf{Third}, a
 \emph{cross-source record-level comparison layer} (\texttt{unified\_papers},
 293M rows, 29~columns) that enables simultaneous queries across all
 sources---supporting analyses such as multi-database citation reliability

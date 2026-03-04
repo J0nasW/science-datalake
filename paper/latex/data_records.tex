@@ -7,7 +7,8 @@ DOI: \texttt{10.57967/hf/7850}), which provides a persistent
 DataCite DOI for citation. Remote users can query the Parquet files directly
 through DuckDB's \texttt{hf://} protocol without downloading the full dataset.
 Due to licensing restrictions, the HuggingFace-hosted version does not include
-Semantic Scholar (ODC-BY, non-commercial research use) or Reliance on Science
+Semantic Scholar (distributed under ODC-BY with additional terms of service
+restricting use to non-commercial research) or Reliance on Science
 (CC~BY-NC~4.0). Both sources can be obtained locally using the provided download
 scripts and a free Semantic Scholar API key; once downloaded, the pipeline
 automatically integrates them into the unified schema.
@@ -19,6 +20,7 @@ file ({\raise.17ex\hbox{$\scriptstyle\sim$}}270\,KB) defines 153~SQL views that
 reference these Parquet files and can be regenerated from source using the
 provided pipeline scripts.
 
+\begin{minipage}{\textwidth}
 The principal schemas and their contents are:
 
 \begin{itemize}[nosep]
@@ -43,8 +45,10 @@ The principal schemas and their contents are:
     \texttt{*\_xrefs} tables.
 \end{itemize}
 
+\smallskip
 Each source retains its original license: CC0 (OpenAlex), ODC-BY (S2AG),
 CC~BY 4.0 (SciSciNet), CC~BY-SA 4.0 (Papers with Code), CC~BY-NC 4.0
 (Reliance on Science), and open/public-domain for the remaining sources.
 Users should comply with the most restrictive license applicable to the
 sources they query.
+\end{minipage}

@@ -161,6 +161,19 @@
       "format": "parquet",
       "source_url": "https://zbw.eu/stw/",
       "type": "ontology"
+    },
+    "fulltext": {
+      "path": "datasets/fulltext",
+      "parquet_path": "datasets/fulltext/parquet",
+      "full_name": "Unified Full-Text Papers",
+      "format": "parquet",
+      "last_updated": "2026-03-03",
+      "description": "Aggregated full-text from S2ORC, peS2o, PMC, arXiv with DOI-based deduplication. 38.0M papers (13.2M full-text), 130 GB unified parquet.",
+      "type": "fulltext",
+      "total_papers": 38011612,
+      "full_text_papers": 13229345,
+      "sources": ["s2orc", "pes2o", "pmc", "arxiv"],
+      "dedup_priority": ["pmc", "s2orc", "pes2o", "arxiv", "biorxiv", "core"]
     }
   }
 }

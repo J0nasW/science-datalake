@@ -1,13 +1,25 @@
 cff-version: 1.2.0
-title: "Science Data Lake: A Unified, Portable Data Lake for Full-Lifecycle Scholarly Analysis"
-message: "If you use this dataset, please cite it using the metadata from this file."
+title: "The Science Data Lake: A Unified Open Infrastructure Integrating 293 Million Papers Across Eight Scholarly Sources with Embedding-Based Ontology Alignment"
+message: "If you use this dataset, please cite the paper below."
 type: dataset
 authors:
   - family-names: Wilinski
     given-names: Jonas
     orcid: "https://orcid.org/0009-0005-4672-7197"
+    affiliation: "Hamburg University of Technology (TUHH)"
 repository-code: "https://github.com/J0nasW/science-datalake"
 url: "https://huggingface.co/datasets/J0nasW/science-datalake"
+preferred-citation:
+  type: article
+  title: "The Science Data Lake: A Unified Open Infrastructure Integrating 293 Million Papers Across Eight Scholarly Sources with Embedding-Based Ontology Alignment"
+  authors:
+    - family-names: Wilinski
+      given-names: Jonas
+      orcid: "https://orcid.org/0009-0005-4672-7197"
+      affiliation: "Hamburg University of Technology (TUHH)"
+  journal: "arXiv preprint arXiv:2603.03126"
+  year: 2026
+  url: "https://arxiv.org/abs/2603.03126"
 abstract: >-
   A unified, portable science data lake integrating 8 complementary scholarly
   datasets (293M+ unique DOIs, ~960 GB Parquet) with cross-dataset DOI normalization,
@@ -33,6 +45,9 @@ identifiers:
   - type: doi
     value: "10.57967/hf/7850"
     description: "HuggingFace dataset DOI"
+  - type: other
+    value: "arXiv:2603.03126"
+    description: "arXiv preprint"
 references:
   - type: dataset
     title: "OpenAlex"

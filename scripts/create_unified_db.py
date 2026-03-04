@@ -41,6 +41,7 @@ PWC_PARQUET = ROOT / "datasets" / "paperswithcode" / "parquet"
 RETWATCH_PARQUET = ROOT / "datasets" / "retractionwatch" / "parquet"
 ROS_PARQUET = ROOT / "datasets" / "reliance_on_science" / "parquet"
 P2P_PARQUET = ROOT / "datasets" / "preprint_to_paper" / "parquet"
+FULLTEXT_PARQUET = ROOT / "datasets" / "fulltext" / "parquet"
 
 try:
     from ontology_registry import ALL_ONTOLOGY_NAMES as ONTOLOGY_NAMES
@@ -453,6 +454,48 @@ def create_ontology_views(conn: duckdb.DuckDBPyConnection) -> list[str]:
     return all_views
 
 
+def create_fulltext_views(conn: duckdb.DuckDBPyConnection) -> list[str]:
+    """Create fulltext schema and views for unified full-text paper data."""
+    conn.execute("CREATE SCHEMA IF NOT EXISTS fulltext")
+    views = []
+
+    if not FULLTEXT_PARQUET.exists():
+        return views
+
+    # Per-source views
+    sources = ["s2orc", "pes2o", "pmc", "arxiv", "biorxiv", "core"]
+    source_views = []
+    for source in sources:
+        source_dir = FULLTEXT_PARQUET / source
+        if not source_dir.exists() or not list(source_dir.glob("*.parquet")):
+            continue
+        path = source_dir / "*.parquet"
+        conn.execute(
+            f"CREATE VIEW fulltext.{source} AS "
+            f"SELECT * FROM read_parquet('{path}')"
+        )
+        views.append(f"fulltext.{source}")
+        source_views.append(f"SELECT * FROM fulltext.{source}")
+
+    # Combined view: all sources UNION ALL
+    if source_views:
+        union_sql = " UNION ALL ".join(source_views)
+        conn.execute(f"CREATE VIEW fulltext.all_sources AS {union_sql}")
+        views.append("fulltext.all_sources")
+
+    # Deduplicated view (from unified/ parquet, created by materialize_fulltext.py)
+    unified_dir = FULLTEXT_PARQUET / "unified"
+    if unified_dir.exists() and list(unified_dir.glob("*.parquet")):
+        unified_path = unified_dir / "*.parquet"
+        conn.execute(
+            f"CREATE VIEW fulltext.papers AS "
+            f"SELECT * FROM read_parquet('{unified_path}')"
+        )
+        views.append("fulltext.papers")
+
+    return views
+
+
 def create_xref_views(
     conn: duckdb.DuckDBPyConnection,
     s2ag_views: list[str],
@@ -712,6 +755,13 @@ def create_database(materialize: bool = False):
     else:
         print("  No parquet data found")
 
+    print("[Full-Text Papers]")
+    fulltext_views = create_fulltext_views(conn)
+    if fulltext_views:
+        print(f"  Created {len(fulltext_views)} views")
+    else:
+        print("  No fulltext parquet data found (run convert_fulltext.py first)")
+
     print("[Cross-references]")
     xref_views = create_xref_views(
         conn, s2ag_views, sciscinet_views, openalex_views, pwc_views,
@@ -728,7 +778,7 @@ def create_database(materialize: bool = False):
 
     all_views = [s2ag_views, sciscinet_views, openalex_views, pwc_views,
                  ontology_views, retwatch_views, ros_views, p2p_views,
-                 xref_views, compat_views]
+                 fulltext_views, xref_views, compat_views]
     total = sum(len(v) for v in all_views)
     db_size = DB_PATH.stat().st_size / 1024
     print(f"\nTotal: {total} views/tables")

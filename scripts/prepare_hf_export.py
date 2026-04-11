@@ -81,15 +81,38 @@ def get_source_mappings():
     if rw_dir.exists() and list(rw_dir.glob("*.parquet")):
         mappings["retwatch/retraction_watch"] = rw_dir
 
-    # Reliance on Science
+    # Reliance on Science (CC BY-NC 4.0)
     ros_dir = ds / "reliance_on_science" / "parquet"
-    if ros_dir.exists() and list(ros_dir.glob("*.parquet")):
-        mappings["ros/patent_paper_pairs"] = ros_dir
+    if ros_dir.exists():
+        for f in sorted(ros_dir.glob("*.parquet")):
+            table_name = f.stem
+            mappings[f"ros/{table_name}"] = f
 
     # Preprint to Paper
     p2p_dir = ds / "preprint_to_paper" / "parquet"
     if p2p_dir.exists() and list(p2p_dir.glob("*.parquet")):
         mappings["p2p/preprint_to_paper"] = p2p_dir
+
+    # USPTO PatentsView
+    uspto_dir = ds / "uspto" / "parquet"
+    if uspto_dir.exists():
+        for sub in sorted(uspto_dir.iterdir()):
+            if sub.is_dir() and list(sub.glob("*.parquet")):
+                mappings[f"uspto/{sub.name}"] = sub
+
+    # EPO DOCDB/INPADOC
+    epo_dir = ds / "epo" / "parquet"
+    if epo_dir.exists():
+        for sub in sorted(epo_dir.iterdir()):
+            if sub.is_dir() and list(sub.glob("*.parquet")):
+                mappings[f"epo/{sub.name}"] = sub
+
+    # Lens.org
+    lens_dir = ds / "lens" / "parquet"
+    if lens_dir.exists():
+        for sub in sorted(lens_dir.iterdir()):
+            if sub.is_dir() and list(sub.glob("*.parquet")):
+                mappings[f"lens/{sub.name}"] = sub
 
     # Cross-reference tables
     xref_dir = ds / "xref"

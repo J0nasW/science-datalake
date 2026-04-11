@@ -7,7 +7,8 @@
 A unified, portable data lake of scientific publication data.
 Three core bibliometric datasets (~250M+ papers each), plus Papers With Code (ML method-task-dataset-code mappings),
 13 scientific ontologies (1.3M terms), Retraction Watch (69K retraction records), Reliance on Science
-(47.8M patent→paper citations), PreprintToPaper (146K preprint→publication mappings), and a unified full-text
+(47.8M patent→paper citations), Lens.org (bidirectional patent-scholarly linkage across 100+ jurisdictions),
+PreprintToPaper (146K preprint→publication mappings), and a unified full-text
 corpus (13.2M full-text papers from 4 sources), all queryable via DuckDB.
 
 ## Quick Start
@@ -50,6 +51,9 @@ python scripts/datalake_cli.py update openalex  # download + convert + views
 | **Unified Full-Text** | 38M | Full paper text from 4 open sources | 13.2M full-text, 24.8M abstracts; deduplicated per-DOI (PMC > S2ORC > peS2o > arXiv) |
 | **Retraction Watch** | 69K | Retracted/corrected papers | Retraction reasons, dates, journals, data quality flag layer |
 | **Reliance on Science** | 47.8M | Patent→paper citations | Global patent-science linkages with confidence scores, institution types |
+| **USPTO PatentsView** | 12M+ | US patent metadata | Titles, abstracts, inventors, assignees, CPC codes, citation network (public domain) |
+| **EPO DOCDB/INPADOC** | 100M+ | Global patent data | 100+ offices, patent families, IPC/CPC, legal events (free since Jan 2025) |
+| **Lens.org** | 264M scholarly + 160M patent | Bidirectional patent-scholarly linkage | Both directions (patent→paper AND paper→patent), 100+ jurisdictions, citation phase/relevance metadata |
 | **PreprintToPaper** | 146K | Preprint→publication mapping | bioRxiv/medRxiv to journal DOIs, timing, publication status |
 
 ### How the Datasets Relate
@@ -551,6 +555,207 @@ SELECT patent, paperid, ppp_score
 FROM ros.patent_paper_pairs_plus
 WHERE paperuniv = true AND commercialized = true
 LIMIT 20;
+```
+
+---
+
+## USPTO PatentsView
+
+**Release:** 2024-Q4 | **Size:** ~50 GB (Parquet) | **Format:** Parquet (converted from TSV) | **License:** Public domain
+
+Disambiguated US patent data from PatentsView, covering 12M+ utility patents. Includes inventors, assignees, CPC classifications, and patent-to-patent citation networks. Primary value: enriches the existing patent-science linkage (RoS) with actual patent metadata.
+
+### Schema: `uspto`
+
+| View | Rows | Description |
+|------|------|-------------|
+| `patents` | 12M+ | Core patent metadata: title, abstract, date, type, claims |
+| `patents_with_ros_id` | 12M+ | Convenience: patents with RoS-format ID |
+| `inventors` | 20M+ | Disambiguated inventors with location |
+| `assignees` | 15M+ | Assignees (companies, universities, government) |
+| `cpc_current` | 50M+ | CPC classification codes |
+| `citations` | 130M+ | Patent-to-patent citation network |
+| `application` | 12M+ | Filing dates, application data |
+| `location` | ~500K | Geographic locations for inventors/assignees |
+
+### Cross-Dataset Join Keys
+
+- **USPTO → RoS**: `'US-' || uspto.patents.patent_id = ros.pcs_oa.patent`
+- **USPTO → EPO**: `'US-' || patent_id || '-' || kind = epo.publications.doc_id`
+
+### Common Queries
+
+```sql
+-- Find which companies hold patents citing a specific paper
+SELECT a.organization, COUNT(DISTINCT r.patent) AS n_patents
+FROM ros.pcs_oa r
+JOIN uspto.assignees a ON REPLACE(r.patent, 'US-', '') = a.patent_id
+WHERE r.oaid = 2100837269  -- OpenAlex numeric ID
+GROUP BY a.organization ORDER BY n_patents DESC LIMIT 20;
+
+-- Technology domains of patents citing machine learning research
+SELECT c.section, COUNT(*) AS n
+FROM ros.pcs_oa r
+JOIN uspto.cpc_current c ON REPLACE(r.patent, 'US-', '') = c.patent_id
+WHERE r.oaid IN (
+    SELECT CAST(REPLACE(id, 'https://openalex.org/W', '') AS BIGINT)
+    FROM openalex.works WHERE display_name LIKE '%machine learning%'
+    LIMIT 1000
+)
+GROUP BY c.section ORDER BY n DESC;
+
+-- Patent title and abstract for a known RoS patent
+SELECT p.patent_id, p.title, LEFT(p.abstract, 200) AS abstract_preview
+FROM uspto.patents p
+WHERE p.patent_id = '10000036';
+```
+
+### Full-Text Data (`fulltext` table)
+
+The `uspto.fulltext` table contains **full patent text** (title, abstract, claims, description) extracted from USPTO weekly XML bulk data (2010-present, ~5-7M utility patents).
+
+**Key for MLM training:** Claims use the highly stylized patent register ("comprising... wherein... configured to...") that domain-specific models need to internalize.
+
+| View | Rows | Description |
+|------|------|-------------|
+| `fulltext` | ~5-7M | Full text: title, abstract, claims, description (full + truncated) |
+| `fulltext_compact` | ~5-7M | Same without `description_full` (faster queries) |
+
+```sql
+-- Build MLM training corpus: patent claims with CPC context
+SELECT f.patent_id, f.cpc_section, f.title, f.abstract, f.claims
+FROM uspto.fulltext f
+WHERE f.year >= 2015 AND f.claims != '';
+
+-- Join full text with RoS to get claims of patents that cite a specific paper
+SELECT f.patent_id, f.title, LEFT(f.claims, 500) AS claim_preview
+FROM ros.pcs_oa r
+JOIN uspto.fulltext f ON REPLACE(r.patent, 'US-', '') = f.patent_id
+WHERE r.oaid = 2100837269;
+```
+
+---
+
+## EPO DOCDB & INPADOC
+
+**Release:** 2025 | **Size:** ~200 GB (Parquet) | **Format:** Parquet (converted from XML) | **License:** Free (EPO terms apply)
+
+Global patent bibliographic data from 100+ patent offices (DOCDB) plus 470M+ legal status events (INPADOC). Key unique value: **patent family structure** — groups equivalent filings so one invention = one family, regardless of how many countries it was filed in.
+
+### Schema: `epo`
+
+| View | Rows | Description |
+|------|------|-------------|
+| `publications` | 100M+ | Worldwide bibliographic data |
+| `applicants` | 200M+ | Patent applicants |
+| `inventors` | 200M+ | Patent inventors |
+| `ipc_codes` | 300M+ | IPC classification codes |
+| `cpc_codes` | 200M+ | CPC classification codes |
+| `priorities` | 150M+ | Priority claims |
+| `families` | 60M+ | DOCDB simple patent families |
+| `legal_events` | 470M+ | INPADOC grant/expiry/lapse events |
+
+### Patent Families Explained
+
+A DOCDB simple family groups all documents sharing at least one priority claim. Example: one invention filed in US+EP+CN+JP+KR = 5 documents but 1 family. This is essential for:
+- **Counting patents correctly**: without families, you count 5 documents for 1 invention
+- **Measuring geographic spread**: how many countries was an invention protected in?
+- **Joining to RoS**: match patent-paper pairs to family-paper pairs for deduplicated impact
+
+### Cross-Dataset Join Keys
+
+- **EPO → RoS**: `epo.publications.country || '-' || epo.publications.doc_number ≈ ros.pcs_oa.patent` (format normalization)
+- **EPO → USPTO**: `epo.publications.doc_number = uspto.patents.patent_id WHERE epo.publications.country = 'US'`
+- **EPO families → EPO publications**: `epo.families.family_id = epo.publications.family_id`
+
+### Common Queries
+
+```sql
+-- Count distinct patent families citing a paper (not just documents)
+SELECT COUNT(DISTINCT f.family_id) AS n_families
+FROM ros.pcs_oa r
+JOIN epo.families f ON r.patent = f.country || '-' || f.doc_number
+WHERE r.oaid = 2100837269;
+
+-- Geographic spread of filings for a patent family
+SELECT country, COUNT(*) AS n_filings
+FROM epo.families
+WHERE family_id = 12345678
+GROUP BY country ORDER BY n_filings DESC;
+
+-- Legal status: find expired/lapsed patents
+SELECT doc_id, event_code, event_date, event_description
+FROM epo.legal_events
+WHERE event_code LIKE '%LAPS%'
+AND event_date >= '20200101'
+LIMIT 100;
+
+-- Top applicants worldwide
+SELECT name, COUNT(DISTINCT doc_id) AS n_publications
+FROM epo.applicants
+GROUP BY name ORDER BY n_publications DESC LIMIT 20;
+```
+
+---
+
+## Lens.org Patent-Scholarly Linkage
+
+**Source:** https://www.lens.org/ | **Size:** 20-38 GB (Parquet) from ~200 GB raw | **Format:** Parquet (converted from NDJSON.gz) | **License:** ITK institutional subscription (not redistributable)
+
+Bidirectional patent-scholarly citation linkage from Lens.org. Unlike Reliance on Science (US-centric at 72%, patent→paper only, stale post-2017), Lens provides:
+- **Both directions**: patent→paper AND paper→patent
+- **Global coverage**: 100+ jurisdictions (not just US)
+- **Citation phase metadata**: SEA (search), ISR (international search report), EXA (examination), APP (applicant)
+- **Relevance categories**: X (novelty-destroying), Y (inventive step), A (background), D (cited in description)
+- **Resolved identifiers**: DOI, PMID, OpenAlex mapped to Lens IDs
+
+### Schema: `lens`
+
+| View | Rows | Description |
+|------|------|-------------|
+| `patent_npl_citations` | 300-500M | Patent citing scholarly work (NPL citation) with phase/category |
+| `scholarly_patent_citations` | 50-150M | Reverse: which patents cite a paper |
+| `id_map` | 264M | Lens ID ↔ DOI/OpenAlex/PMID/PMCID bridge |
+| `patent_meta` | 160M | Patent identifiers + family IDs (lightweight) |
+
+### Cross-Dataset Join Keys
+
+- **Lens → OpenAlex**: `lens.id_map.openalex_id = openalex.works.id`
+- **Lens → S2AG**: via DOI: `lens.id_map.doi = s2ag.papers.doi`
+- **Lens → RoS**: `lens.patent_meta.jurisdiction || '-' || lens.patent_meta.doc_number ≈ ros.pcs_oa.patent`
+- **Lens → EPO**: `lens.patent_meta.jurisdiction || lens.patent_meta.doc_number || lens.patent_meta.kind ≈ epo.publications.doc_id`
+- **Unified bridge**: `xref.patent_scholarly_bridge` combines Lens + RoS citations
+
+### Common Queries
+
+```sql
+-- How many patents cite a given paper (by DOI)?
+SELECT COUNT(*) AS patent_count
+FROM lens.patent_npl_citations
+WHERE doi = '10.1038/nature12373';
+
+-- Citation phase distribution (unique Lens value-add over RoS)
+SELECT cited_phase, COUNT(*) AS n
+FROM lens.patent_npl_citations
+WHERE cited_phase IS NOT NULL
+GROUP BY cited_phase ORDER BY n DESC;
+
+-- Geographic coverage comparison: Lens vs RoS
+SELECT jurisdiction, COUNT(*) AS n_patents
+FROM lens.patent_meta
+GROUP BY jurisdiction ORDER BY n_patents DESC LIMIT 20;
+
+-- DOI overlap with OpenAlex (expect 80%+)
+SELECT COUNT(*) AS lens_dois, COUNT(oa.id) AS matched,
+       ROUND(100.0 * COUNT(oa.id) / COUNT(*), 1) AS pct
+FROM lens.id_map lm
+LEFT JOIN openalex.works oa ON lm.doi = LOWER(REPLACE(oa.doi, 'https://doi.org/', ''))
+WHERE lm.doi IS NOT NULL;
+
+-- Unified patent-scholarly bridge: all sources combined
+SELECT source, direction, COUNT(*) AS n
+FROM xref.patent_scholarly_bridge
+GROUP BY source, direction ORDER BY n DESC;
 ```
 
 ---

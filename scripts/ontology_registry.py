@@ -202,6 +202,21 @@ ONTOLOGIES = {
         "estimated_terms": 6000,
         "id_prefix": "http://zbw.eu/stw/descriptor/",
     },
+    "cpc_taxonomy": {
+        "full_name": "Cooperative Patent Classification",
+        "domain": "Patent Technology Classification",
+        "license": "Public domain (joint USPTO/EPO)",
+        "source_url": "https://www.cooperativepatentclassification.org/cpcSchemeAndDefinitions/bulk",
+        "download": {
+            "url": "https://www.cooperativepatentclassification.org/sites/default/files/cpc/bulk/CPCTitleList202601.zip",
+            "filename": "CPCTitleList202601.zip",
+            "method": "http",
+        },
+        "format": "custom",
+        "parser": "convert_cpc_taxonomy",
+        "estimated_terms": 254000,
+        "id_prefix": "CPC:",
+    },
     "cso": {
         "full_name": "Computer Science Ontology",
         "domain": "Computer Science",

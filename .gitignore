@@ -50,9 +50,9 @@ Thumbs.db
 datasets/xref/topic_ontology_embeddings/
 
 # Custom
-paper/arxiv_submission/
-paper/arxiv_submission.zip
-paper/social/
+paper/
+paper_v2/
+paper_nsd/
 
 # Claude
 .claude/
@@ -60,5 +60,6 @@ paper/social/
 # HPC
 scripts/hpc/*
 scripts/hpc
+scripts/patents
 
 manifests/

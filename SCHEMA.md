@@ -2,7 +2,7 @@
 
 > LLM-optimized reference for querying the science data lake.
 > Connection: `duckdb.connect('datalake.duckdb', read_only=True)`
-> Schemas: `s2ag`, `sciscinet`, `openalex`, `pwc`, `fulltext`, 13 ontology schemas (`mesh`, `go`, `chebi`, `ncit`, `hpo`, `agrovoc`, `cso`, `doid`, `edam`, `stw`, `msc2020`, `physh`, `unesco`), `retwatch`, `ros`, `p2p`, `xref` | 159 views (including 8 backward-compat aliases in `main`)
+> Schemas: `s2ag`, `sciscinet`, `openalex`, `pwc`, `fulltext`, `uspto`, `epo`, `lens`, 13 ontology schemas (`mesh`, `go`, `chebi`, `ncit`, `hpo`, `agrovoc`, `cso`, `doid`, `edam`, `stw`, `msc2020`, `physh`, `unesco`), `retwatch`, `ros`, `p2p`, `xref` | 180+ views (including 8 backward-compat aliases in `main`)
 
 ---
 
@@ -147,6 +147,29 @@
 | **ros.pcs_oa** | 47.8M | L | Patent citation-to-science pairs (global) |
 | **ros.patent_paper_pairs** | 548K | S | Curated patent-paper similarity pairs |
 | **ros.patent_paper_pairs_plus** | 548K | S | Extended pairs with institutional metadata |
+| **uspto.patents** | 12M+ | L | US patent metadata: title, abstract, date, type, claims |
+| **uspto.patents_with_ros_id** | 12M+ | L | Convenience: patents with RoS-format ID for joining |
+| **uspto.inventors** | 20M+ | VL | Disambiguated inventors with location |
+| **uspto.assignees** | 15M+ | VL | Assignees (companies, universities) |
+| **uspto.cpc_current** | 50M+ | VL | CPC classification codes |
+| **uspto.citations** | 130M+ | VL | Patent-to-patent citation network |
+| **uspto.application** | 12M+ | L | Filing dates, application data |
+| **uspto.location** | ~500K | S | Geographic locations for inventors/assignees |
+| **uspto.wipo** | ~12M | L | WIPO technology field assignments |
+| **uspto.fulltext** | ~5-7M | VL | Full-text grants (2010+): title, abstract, claims, description |
+| **uspto.fulltext_compact** | ~5-7M | VL | Convenience: fulltext without description_full column |
+| **epo.publications** | 100M+ | VL | Global patent bibliographic data from 100+ offices |
+| **epo.applicants** | 200M+ | VL | Patent applicants worldwide |
+| **epo.inventors** | 200M+ | VL | Patent inventors worldwide |
+| **epo.ipc_codes** | 300M+ | VL | IPC classification codes |
+| **epo.cpc_codes** | 200M+ | VL | CPC classification codes |
+| **epo.priorities** | 150M+ | VL | Priority claims (earliest filings) |
+| **epo.families** | 60M+ | VL | DOCDB simple patent families |
+| **epo.legal_events** | 470M+ | VL | INPADOC legal status events (grant/expiry/lapse) |
+| **lens.patent_npl_citations** | 300-500M | VL | Patent → scholarly NPL citations with phase/category |
+| **lens.scholarly_patent_citations** | 50-150M | L | Reverse: which patents cite a scholarly work |
+| **lens.id_map** | 264M | VL | Lens ID → DOI/OpenAlex/PMID/PMCID bridge |
+| **lens.patent_meta** | 160M | VL | Lightweight patent identifiers + family IDs |
 | **p2p.preprint_to_paper** | 146K | S | Preprint→publication DOI mapping with status |
 | **p2p.preprint_to_paper_grayzone** | 299 | S | Manually annotated suspected matches |
 | **fulltext.papers** | 38.0M | VL | Deduplicated full-text papers (best version per DOI from 4 sources) |
@@ -159,6 +182,9 @@
 | **xref.unified_papers** | 293M | VL | Pre-joined cross-source paper table with coverage flags |
 | **xref.topic_ontology_map** | 16.2K | S | OpenAlex topic → ontology term alignment via BGE-large-en-v1.5 embeddings (cosine sim ≥ 0.65) + exact matching; 99.8% topic coverage |
 | **xref.ontology_bridges** | 1.8K | S | Cross-ontology term links via shared external IDs (UMLS, Wikidata, etc.) |
+| **xref.patent_id_map** | ~112M | VL | Patent ID normalization: RoS ↔ PatentsView ↔ EPO DOCDB formats |
+| **xref.patent_families** | 60M+ | VL | Patent-number-to-family-ID mapping (from EPO) |
+| **xref.patent_scholarly_bridge** | varies | VL | Unified patent↔paper citations from Lens + RoS with direction column |
 
 Size tiers: S=<1M, M=1-10M, L=10-100M, VL=>100M rows
 
@@ -1065,6 +1091,278 @@ WHERE paperuniv = true AND commercialized = true;
 
 ---
 
+## USPTO PatentsView
+
+**Primary key:** `patent_id` | **License:** Public domain (US Government work) | **Source:** patentsview.org
+
+Disambiguated US patent data covering 12M+ utility patents. Links to RoS via patent ID normalization (`'US-' || patent_id = ros.pcs_oa.patent`).
+
+### Patent ID Formats
+
+| Source | Format | Example |
+|--------|--------|---------|
+| PatentsView | Bare number | `10000036` |
+| RoS | CC-NNNNNNNN | `US-10000036` |
+| EPO DOCDB | CC-NNNNNNNN-KK | `US-10000036-B2` |
+
+### uspto.patents (12M+ rows, LARGE)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `patent_id` | VARCHAR | Patent number (e.g., `10000036`) |
+| `type` | VARCHAR | Patent type: utility, design, plant, reissue |
+| `date` | VARCHAR | Grant date (YYYY-MM-DD) |
+| `title` | VARCHAR | Patent title |
+| `abstract` | VARCHAR | Patent abstract |
+| `kind` | VARCHAR | WIPO kind code (B1, B2, etc.) |
+| `num_claims` | INTEGER | Number of claims |
+
+### uspto.inventors (20M+ rows, VERY LARGE)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `patent_id` | VARCHAR | Patent number |
+| `inventor_id` | VARCHAR | Disambiguated inventor ID |
+| `first_name` | VARCHAR | First name |
+| `last_name` | VARCHAR | Last name |
+| `location_id` | VARCHAR | Location ID (join to `uspto.location`) |
+
+### uspto.assignees (15M+ rows, VERY LARGE)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `patent_id` | VARCHAR | Patent number |
+| `assignee_id` | VARCHAR | Disambiguated assignee ID |
+| `organization` | VARCHAR | Organization name (company, university, etc.) |
+| `type` | VARCHAR | Assignee type (2=US company, 3=foreign company, 4=US individual, etc.) |
+
+### uspto.cpc_current (50M+ rows, VERY LARGE)
+
+CPC classification codes. Section codes: A=Human necessities, B=Operations/transport, C=Chemistry, D=Textiles, E=Construction, F=Mechanical engineering, G=Physics, H=Electricity, Y=Emerging tech.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `patent_id` | VARCHAR | Patent number |
+| `section` | VARCHAR | CPC section (A-H, Y) |
+| `class` | VARCHAR | CPC class |
+| `subclass` | VARCHAR | CPC subclass |
+| `group` | VARCHAR | CPC group |
+| `type` | VARCHAR | inventive or additional |
+
+### uspto.citations (130M+ rows, VERY LARGE)
+
+US patent-to-patent citation network.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `citing_patent_id` | VARCHAR | Citing patent number |
+| `cited_patent_id` | VARCHAR | Cited patent number |
+| `date` | VARCHAR | Citation date |
+| `category` | VARCHAR | Citation category |
+
+```sql
+-- Top patent assignees by patent count
+SELECT organization, COUNT(DISTINCT patent_id) AS n_patents
+FROM uspto.assignees GROUP BY organization ORDER BY n_patents DESC LIMIT 20;
+
+-- Technology distribution of patents citing a paper
+SELECT c.section, COUNT(*) AS n_patents
+FROM ros.pcs_oa r
+JOIN uspto.cpc_current c ON REPLACE(r.patent, 'US-', '') = c.patent_id
+WHERE r.oaid = 2100837269
+GROUP BY c.section ORDER BY n_patents DESC;
+
+-- Patent with most claims
+SELECT patent_id, title, num_claims FROM uspto.patents
+ORDER BY num_claims DESC LIMIT 10;
+```
+
+### uspto.fulltext (~5-7M rows, VERY LARGE)
+
+Full text of US utility patent grants (2010-present). Extracted from USPTO PTGRXML weekly XML bulk data.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `patent_id` | VARCHAR | Patent number (e.g., `12575469`) |
+| `kind` | VARCHAR | Kind code (B1, B2) |
+| `date` | VARCHAR | Grant date (YYYYMMDD) |
+| `title` | VARCHAR | Invention title |
+| `abstract` | VARCHAR | Plain text abstract |
+| `claims` | VARCHAR | All claims concatenated (avg ~7 KB, **key for MLM training**) |
+| `description` | VARCHAR | First 2000 words of description |
+| `description_full` | VARCHAR | Complete description (avg ~70 KB) |
+| `num_claims` | INTEGER | Number of claims |
+| `cpc_section` | VARCHAR | Primary CPC section (A-H, Y) |
+| `year` | INTEGER | Grant year |
+
+```sql
+-- Patent claims for a specific patent
+SELECT patent_id, title, claims FROM uspto.fulltext
+WHERE patent_id = '12575469';
+
+-- MLM training corpus: claims from 2020+ AI patents (CPC G06N)
+SELECT f.claims FROM uspto.fulltext f
+JOIN uspto.cpc_current c ON f.patent_id = c.patent_id
+WHERE c.subclass = 'G06N' AND f.year >= 2020;
+
+-- Average claim length by CPC section
+SELECT cpc_section, AVG(LENGTH(claims)) AS avg_claim_len, COUNT(*) AS n
+FROM uspto.fulltext
+GROUP BY cpc_section ORDER BY avg_claim_len DESC;
+```
+
+---
+
+## EPO DOCDB & INPADOC
+
+**Primary key:** `doc_id` (CC-NNNNNNNN-KK) | **License:** Free (EPO terms apply) | **Source:** EPO BDDS
+
+Global patent bibliographic data from 100+ patent offices (DOCDB) and legal events (INPADOC). Key unique value: **patent family structure** — groups equivalent filings across offices so one invention = one family, not N duplicate documents.
+
+### epo.publications (100M+ rows, VERY LARGE)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `doc_id` | VARCHAR | Document ID: CC-NNNNNNNN-KK (e.g., `US-10000036-B2`) |
+| `country` | VARCHAR | Country code (US, EP, CN, JP, KR, DE, etc.) |
+| `doc_number` | VARCHAR | Document number |
+| `kind` | VARCHAR | Kind code (A1=application, B2=granted) |
+| `family_id` | BIGINT | DOCDB simple family ID |
+| `title` | VARCHAR | Title (English preferred) |
+| `abstract` | VARCHAR | Abstract (English preferred) |
+| `publication_date` | VARCHAR | Publication date (YYYYMMDD) |
+| `publication_year` | INTEGER | Publication year (derived) |
+
+### epo.families (60M+ rows, VERY LARGE)
+
+Patent families group equivalent filings: one invention filed in US+EP+CN+JP+KR = 5 documents but 1 family.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `family_id` | BIGINT | DOCDB simple family ID |
+| `doc_id` | VARCHAR | Document ID |
+| `country` | VARCHAR | Country code |
+
+### epo.legal_events (470M+ rows, VERY LARGE)
+
+INPADOC legal status events: patent lifecycle tracking.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `doc_id` | VARCHAR | Document ID |
+| `event_code` | VARCHAR | Legal event code |
+| `event_date` | VARCHAR | Event date (YYYYMMDD) |
+| `event_description` | VARCHAR | Event description |
+
+```sql
+-- How many distinct patent families cite a given paper?
+SELECT COUNT(DISTINCT f.family_id) AS n_families
+FROM ros.pcs_oa r
+JOIN epo.families f ON r.patent = f.country || '-' || f.doc_number
+WHERE r.oaid = 2100837269;
+
+-- Patent family size distribution
+SELECT family_id, COUNT(*) AS family_size
+FROM epo.families GROUP BY family_id
+ORDER BY family_size DESC LIMIT 20;
+
+-- Legal status: granted patents that have lapsed
+SELECT doc_id, event_date, event_description
+FROM epo.legal_events
+WHERE event_code LIKE '%LAPS%' LIMIT 100;
+```
+
+---
+
+## Lens.org Patent-Scholarly Linkage
+
+**ID format:** Lens IDs (e.g., `000-000-000-000-000`) | **DOI format:** lowercase, no prefix | **License:** ITK institutional subscription
+
+Bidirectional patent-scholarly linkage. Unlike RoS (US-centric, patent→paper only), Lens covers 100+ jurisdictions and provides both directions plus citation phase metadata.
+
+### lens.patent_npl_citations (300-500M rows, VERY LARGE)
+
+Each row = one patent citing one scholarly work (NPL citation).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `patent_lens_id` | VARCHAR | Lens ID of citing patent |
+| `scholarly_lens_id` | VARCHAR | Resolved Lens ID of cited work (NULL if unresolved) |
+| `doi` | VARCHAR | DOI of cited work (lowercase, no prefix) |
+| `pmid` | VARCHAR | PubMed ID of cited work |
+| `citation_text` | VARCHAR | Raw NPL citation string |
+| `cited_phase` | VARCHAR | SEA/ISR/EXA/APP — when during prosecution |
+| `category` | VARCHAR | X/Y/A/D — citation relevance category |
+| `npl_sequence` | INT32 | Sequence within patent's NPL list |
+
+### lens.scholarly_patent_citations (50-150M rows, LARGE)
+
+Reverse direction: which patents cite a scholarly work.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `scholarly_lens_id` | VARCHAR | Lens ID of cited scholarly work |
+| `patent_lens_id` | VARCHAR | Lens ID of citing patent |
+| `doi` | VARCHAR | DOI of scholarly work (lowercase, no prefix) |
+
+### lens.id_map (264M rows, VERY LARGE)
+
+Bridge: Lens IDs ↔ external identifiers used elsewhere in datalake.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `lens_id` | VARCHAR | Lens scholarly identifier |
+| `doi` | VARCHAR | DOI (lowercase, no prefix) |
+| `openalex_id` | VARCHAR | OpenAlex work ID |
+| `pmid` | VARCHAR | PubMed ID |
+| `pmcid` | VARCHAR | PMC ID |
+
+### lens.patent_meta (160M rows, VERY LARGE)
+
+Lightweight patent identifiers for joining (not full metadata).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `lens_id` | VARCHAR | Lens patent identifier |
+| `jurisdiction` | VARCHAR | Country code (US, EP, WO, CN, etc.) |
+| `doc_number` | VARCHAR | Patent document number |
+| `kind` | VARCHAR | Kind code |
+| `pub_date` | DATE | Publication date |
+| `simple_family_id` | VARCHAR | Lens simple family ID |
+| `extended_family_id` | VARCHAR | Lens extended family ID |
+| `npl_count` | INT32 | Total NPL citations |
+| `npl_resolved_count` | INT32 | Resolved NPL citations |
+
+```sql
+-- How many patents cite a given paper (by DOI)?
+SELECT COUNT(*) AS patent_count
+FROM lens.patent_npl_citations
+WHERE doi = '10.1038/nature12373';
+
+-- Citation phase distribution (unique to Lens)
+SELECT cited_phase, COUNT(*) AS n
+FROM lens.patent_npl_citations
+WHERE cited_phase IS NOT NULL
+GROUP BY cited_phase ORDER BY n DESC;
+
+-- Geographic coverage: jurisdiction distribution (expect less US-centric than RoS)
+SELECT jurisdiction, COUNT(*) AS n_patents
+FROM lens.patent_meta
+GROUP BY jurisdiction ORDER BY n_patents DESC LIMIT 20;
+
+-- Lens vs RoS: how many MORE papers get patent linkage via Lens?
+SELECT
+    COUNT(DISTINCT lm.doi) AS lens_papers_with_patents,
+    COUNT(DISTINCT CASE WHEN ros.oaid IS NOT NULL THEN lm.doi END) AS also_in_ros,
+    COUNT(DISTINCT CASE WHEN ros.oaid IS NULL THEN lm.doi END) AS lens_only
+FROM lens.scholarly_patent_citations spc
+JOIN lens.id_map lm ON spc.scholarly_lens_id = lm.lens_id
+LEFT JOIN ros.pcs_oa ros ON lm.openalex_id = 'https://openalex.org/W' || CAST(ros.oaid AS VARCHAR)
+WHERE lm.doi IS NOT NULL;
+```
+
+---
+
 ## PreprintToPaper
 
 **Primary key:** `biorxiv_doi` | **DOI format:** lowercase, no prefix | **License:** Open Access
@@ -1202,6 +1500,33 @@ Normalizes DOIs from all datasets to lowercase, no-prefix format.
 | `source_id` | VARCHAR | Dataset-specific paper ID (corpusid for S2AG, paperid for SciSciNet, paper_id for PWC) |
 
 **Note:** This is a UNION ALL view over papers tables. Each query scans the underlying parquet. Always filter by `doi = ...` to avoid full table scans.
+
+### xref.patent_scholarly_bridge (VERY_LARGE)
+
+Unified patent↔paper citation view combining Lens NPL citations, Lens scholarly patent citations, and Reliance on Science.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `patent_id` | VARCHAR | Patent identifier (Lens ID or RoS patent ID) |
+| `paper_id` | VARCHAR | Paper identifier (DOI, Lens ID, or OpenAlex ID depending on source) |
+| `doi` | VARCHAR | DOI where available (lowercase, no prefix) |
+| `direction` | VARCHAR | `patent_cites_paper` or `paper_cited_by_patent` |
+| `cited_phase` | VARCHAR | SEA/ISR/EXA/APP (Lens NPL only, NULL otherwise) |
+| `category` | VARCHAR | X/Y/A/D relevance (Lens NPL only, NULL otherwise) |
+| `source` | VARCHAR | `lens_npl`, `lens_scholarly`, or `ros` |
+
+```sql
+-- All patent citations for a DOI, from all sources
+SELECT source, direction, patent_id, cited_phase, category
+FROM xref.patent_scholarly_bridge
+WHERE doi = '10.1038/nature12373';
+
+-- Count unique patents citing each paper, across all sources
+SELECT doi, COUNT(DISTINCT patent_id) AS n_patents
+FROM xref.patent_scholarly_bridge
+WHERE doi IS NOT NULL
+GROUP BY doi ORDER BY n_patents DESC LIMIT 20;
+```
 
 ---
 

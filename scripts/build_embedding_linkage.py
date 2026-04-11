@@ -59,23 +59,32 @@ EMBEDDINGS_DIR = ROOT / "datasets" / "xref" / "topic_ontology_embeddings"
 # For faster runs: sentence-transformers/all-MiniLM-L6-v2 (22M, ~5000 texts/s, STS≈80)
 DEFAULT_MODEL = "BAAI/bge-large-en-v1.5"
 
-# Ontology schemas that have terms tables
+# Ontology schemas that have terms tables.
+# ChEBI is excluded entirely: its labels are individual chemical entities
+# (IUPAC names, glycans, peptides) that do not align with paper-level
+# OpenAlex topics. Qualitative review confirmed embedding produces noise.
 ONTOLOGY_SCHEMAS = [
-    "cso", "doid", "go", "mesh", "chebi", "ncit", "hpo",
+    "cso", "doid", "go", "mesh", "ncit", "hpo",
     "edam", "agrovoc", "unesco", "stw", "msc2020", "physh",
 ]
 
-# Ontologies too large for embedding (>100K primary terms).
-# These contain mostly entity names (chemicals, species) that won't match
-# general academic topics. For these, we fall back to exact label matching.
-EMBEDDING_SKIP_ONTOLOGIES = {"mesh", "chebi", "ncit"}
+# Ontologies handled by exact label matching only (none currently).
+# MeSH and NCIT are now embedded (MeSH restricted to descriptors).
+EMBEDDING_SKIP_ONTOLOGIES: set[str] = set()
+
+# For MeSH, restrict to the descriptor namespace. The supplementary
+# concept namespace (~464K rows) holds chemical/protein/compound names
+# that do not match research topics.
+MESH_DESCRIPTORS_ONLY = True
 
 # Threshold for including synonyms: only embed synonyms for ontologies
 # with fewer than this many primary terms (to keep embedding set manageable)
 SYNONYM_SIZE_THRESHOLD = 50000
 
-# Batch size for encoding (adjust based on GPU memory)
-ENCODE_BATCH_SIZE = 256
+# Batch size for encoding (adjust based on GPU memory).
+# 1024 fits comfortably on RTX A4500 (21 GB) for BGE-large and roughly
+# triples throughput vs 256.
+ENCODE_BATCH_SIZE = 1024
 
 
 def load_topics(conn):
@@ -138,9 +147,14 @@ def load_ontology_terms(conn, skip_large=True):
         cols = [r[0] for r in conn.execute(f"DESCRIBE {table}").fetchall()]
         has_synonyms = "synonyms" in cols
 
+        # Extra WHERE for MeSH: descriptors only (drop chemical/concept namespace)
+        extra_where = ""
+        if onto == "mesh" and MESH_DESCRIPTORS_ONLY and "namespace" in cols:
+            extra_where = " AND namespace = 'descriptor'"
+
         # Count primary terms to decide on synonym inclusion
         n_primary = conn.execute(
-            f"SELECT COUNT(*) FROM {table} WHERE label IS NOT NULL AND LENGTH(label) >= 3 AND obsolete = false"
+            f"SELECT COUNT(*) FROM {table} WHERE label IS NOT NULL AND LENGTH(label) >= 3 AND obsolete = false{extra_where}"
         ).fetchone()[0]
         include_synonyms = has_synonyms and n_primary < SYNONYM_SIZE_THRESHOLD
 
@@ -149,14 +163,14 @@ def load_ontology_terms(conn, skip_large=True):
                 SELECT id, label, synonyms
                 FROM {table}
                 WHERE label IS NOT NULL AND LENGTH(label) >= 3
-                  AND obsolete = false
+                  AND obsolete = false{extra_where}
             """).fetchall()
         else:
             rows = conn.execute(f"""
                 SELECT id, label, NULL
                 FROM {table}
                 WHERE label IS NOT NULL AND LENGTH(label) >= 3
-                  AND obsolete = false
+                  AND obsolete = false{extra_where}
             """).fetchall()
 
         for r in rows:

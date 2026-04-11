@@ -6,6 +6,7 @@ license:
 - cc-by-4.0
 - cc-by-sa-4.0
 - cc-by-nc-sa-4.0
+- cc-by-nc-4.0
 size_categories:
 - 100M<n<1B
 task_categories:
@@ -72,6 +73,13 @@ configs:
     data_files: "retwatch/retraction_watch/*.parquet"
   - config_name: p2p_preprint_to_paper
     data_files: "p2p/preprint_to_paper/*.parquet"
+  # Reliance on Science (CC BY-NC 4.0)
+  - config_name: ros_patent_paper_pairs
+    data_files: "ros/patent_paper_pairs/*.parquet"
+  - config_name: ros_patent_paper_pairs_plus
+    data_files: "ros/patent_paper_pairs_plus/*.parquet"
+  - config_name: ros_pcs_oa
+    data_files: "ros/pcs_oa/*.parquet"
   # Ontologies (various licenses, see below)
   - config_name: ontology_terms
     data_files: "ontologies/*_terms.parquet"
@@ -96,9 +104,9 @@ configs:
 
 # Science Data Lake
 
-A unified, portable science data lake integrating **6 scholarly datasets** (~523 GB Parquet) with cross-dataset DOI normalization, **13 scientific ontologies** (1.3M terms), and a reproducible ETL pipeline.
+A unified, portable science data lake integrating **7 scholarly datasets** (~525 GB Parquet) with cross-dataset DOI normalization, **13 scientific ontologies** (1.3M terms), and a reproducible ETL pipeline.
 
-> **Note:** Two additional sources (Semantic Scholar S2AG and Reliance on Science) are supported by the pipeline but are **not redistributed here** pending license clarification. See [Not Included in This Upload](#not-included-in-this-upload) below.
+> **Note:** One additional source (Semantic Scholar S2AG) is supported by the pipeline but is **not redistributed here** due to its API terms of service. See [Not Included in This Upload](#not-included-in-this-upload) below.
 
 ## What's Unique
 
@@ -125,6 +133,7 @@ LIMIT 20
 | **SciSciNet** v2 | 250M papers | **CC BY 4.0** | Disruption index, atypicality, team size |
 | **Papers With Code** | 513K papers | **CC BY-SA 4.0** | Method-task-dataset-code links |
 | **Retraction Watch** | 69K records | **Open** (via Crossref) | Retraction flags + reasons |
+| **Reliance on Science** | 47.8M pairs | **CC BY-NC 4.0** | Patent-to-paper citation pairs (global) |
 | **Preprint-to-Paper** | 146K pairs | **CC BY 4.0** | bioRxiv preprint to published paper |
 | **13 Ontologies** | 1.3M terms | Various (see below) | CSO, MeSH, GO, DOID, ChEBI, NCIT, HPO, EDAM, AGROVOC, UNESCO, STW, MSC2020, PhySH |
 
@@ -150,6 +159,7 @@ Each source was downloaded at a specific point in time:
 | SciSciNet v2 | 2024-11-01 | GCS bucket |
 | Papers With Code | 2025-07 | Archived JSON |
 | Retraction Watch | 2025-02 | Crossref CSV |
+| Reliance on Science | v64 | Zenodo record |
 | Preprint-to-Paper | 2025-06 | Zenodo record |
 | 13 Ontologies | 2026-02 | Official sources |
 
@@ -157,14 +167,13 @@ All snapshots can be refreshed using the [update pipeline](https://github.com/J0
 
 ### Not Included in This Upload
 
-The following sources are supported by the full pipeline ([GitHub](https://github.com/J0nasW/science-datalake)) but are **not redistributed here** due to license restrictions or pending clarification:
+The following source is supported by the full pipeline ([GitHub](https://github.com/J0nasW/science-datalake)) but is **not redistributed here** due to its API terms of service:
 
 | Dataset | Reason | How to obtain |
 |---------|--------|---------------|
 | **S2AG** (Semantic Scholar, 231M papers) | License requires individual agreement with Semantic Scholar | [Semantic Scholar Datasets API](https://api.semanticscholar.org/api-docs/datasets) |
-| **Reliance on Science** (548K patent-paper pairs) | CC BY-NC 4.0 — non-commercial restriction | [Zenodo record](https://zenodo.org/records/8278104) |
 
-After downloading these sources locally, run the full pipeline to integrate them.
+After downloading S2AG locally, run the full pipeline to integrate it.
 
 ## Key Tables
 
@@ -182,12 +191,16 @@ The headline table: one row per unique DOI, joining all sources.
 | `has_sciscinet` | BOOLEAN | Present in SciSciNet |
 | `has_pwc` | BOOLEAN | Has code on Papers With Code |
 | `has_retraction` | BOOLEAN | Flagged in Retraction Watch |
+| `has_s2ag` | BOOLEAN | Present in Semantic Scholar |
+| `has_patent` | BOOLEAN | Cited by at least one patent (RoS) |
+| `s2ag_corpusid` | BIGINT | Semantic Scholar corpus ID |
+| `s2ag_citationcount` | INTEGER | S2AG citation count |
 | `oa_cited_by_count` | BIGINT | OpenAlex citation count |
 | `sciscinet_disruption` | DOUBLE | Disruption index (CD index) |
 | `sciscinet_atypicality` | DOUBLE | Atypicality score |
 | `oa_fwci` | DOUBLE | Field-Weighted Citation Impact |
 
-> **Note:** The locally-built version of `unified_papers` includes additional columns from S2AG and RoS (`s2ag_corpusid`, `s2ag_citationcount`, `has_s2ag`, `has_patent`). These columns are present in the uploaded file but will contain NULL values for users who have not integrated those sources locally.
+> **Note:** The S2AG columns (`s2ag_corpusid`, `s2ag_citationcount`, `s2ag_influentialcitationcount`, `s2ag_isopenaccess`, `has_s2ag`) are present in the uploaded file but will contain NULL/FALSE values unless S2AG has been integrated locally. All other columns (including `has_patent` from Reliance on Science) are fully populated.
 
 ### `topic_ontology_map`
 Maps OpenAlex's 4,516 topics to terms in 13 scientific ontologies via embedding-based semantic similarity (BGE-large-en-v1.5, 1024-dim) + exact matching for large ontologies (MeSH, ChEBI, NCIT). 16,150 mappings covering 99.8% of topics. Columns include `similarity` (cosine, 0-1) and `match_type` (label/synonym/exact) for quality filtering.
@@ -197,10 +210,44 @@ Cross-ontology links discovered via shared external IDs (UMLS, Wikidata, MESH, e
 
 ## Usage with DuckDB
 
+### Option 1: Pre-built database file (recommended)
+
+This repository includes a ready-to-use DuckDB database file (`datalake.duckdb`, 274 KB) with 145 SQL views pre-configured to read directly from HuggingFace. Download just this one file and query all 7 datasets immediately — no pipeline setup required.
+
 ```python
 import duckdb
 
-# Query directly from HuggingFace
+con = duckdb.connect()
+con.execute("INSTALL httpfs; LOAD httpfs;")
+con.execute("ATTACH 'hf://datasets/J0nasW/science-datalake/datalake.duckdb' AS lake")
+
+# Query using familiar schema.table syntax
+df = con.execute("""
+    SELECT doi, title, year, sciscinet_disruption, oa_cited_by_count
+    FROM lake.xref.unified_papers
+    WHERE sciscinet_disruption IS NOT NULL
+    ORDER BY sciscinet_disruption DESC
+    LIMIT 100
+""").df()
+
+# Cross-source joins work out of the box
+con.execute("""
+    SELECT t.display_name AS topic, o.ontology, o.term_name, o.similarity
+    FROM lake.xref.topic_ontology_map o
+    JOIN lake.openalex.topics t ON t.id = o.topic_id
+    WHERE o.similarity >= 0.85
+    ORDER BY o.similarity DESC
+    LIMIT 20
+""").df()
+```
+
+### Option 2: Direct Parquet queries
+
+You can also query individual Parquet files directly without the database file:
+
+```python
+import duckdb
+
 con = duckdb.connect()
 con.execute("INSTALL httpfs; LOAD httpfs;")
 
@@ -232,11 +279,11 @@ See the [GitHub repository](https://github.com/J0nasW/science-datalake) for full
 
 This data lake ships with **[SCHEMA.md](https://github.com/J0nasW/science-datalake/blob/main/SCHEMA.md)** — a structured reference file optimized for LLM-based coding agents (Claude Code, Cursor, Copilot, etc.). It contains every table, column, type, join strategy, and performance tier in a format that AI agents can use to write correct DuckDB SQL without prior schema knowledge.
 
-Point your AI assistant at `SCHEMA.md` and ask it to query across all 6+ datasets and 13 ontologies using natural language.
+Point your AI assistant at `SCHEMA.md` and ask it to query across all 7 hosted datasets and 13 ontologies using natural language.
 
 ## Building the Full Instance (All 8 Sources)
 
-Clone the GitHub repository and run the pipeline to integrate all sources including S2AG and RoS:
+Clone the GitHub repository and run the pipeline to integrate all sources including S2AG:
 
 ```bash
 git clone https://github.com/J0nasW/science-datalake
@@ -276,6 +323,7 @@ This dataset aggregates multiple sources, each with its own license. **Users mus
 | SciSciNet v2 data | CC BY 4.0 |
 | Papers With Code data | CC BY-SA 4.0 |
 | Retraction Watch data | Open (via Crossref) |
+| Reliance on Science data | CC BY-NC 4.0 |
 | Preprint-to-Paper data | CC BY 4.0 |
 | Cross-reference tables (`unified_papers`, `topic_ontology_map`) | Derived work — most restrictive source license applies |
 | Ontologies | Various — see table above; note **MSC2020 is CC BY-NC-SA 4.0** |

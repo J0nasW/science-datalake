@@ -349,6 +349,20 @@ def export_parquet_skos(name: str, info: dict) -> int:
         return 0
 
     SKOS = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
+    SKOSXL = rdflib.Namespace("http://www.w3.org/2008/05/skos-xl#")
+
+    def _xl_literal(label_node):
+        """Resolve a SKOS-XL label resource to its literal string. Returns
+        (text, is_english)."""
+        best = ""
+        for _, _, lit in g.triples((label_node, SKOSXL.literalForm, None)):
+            s = str(lit)
+            lang = getattr(lit, "language", None)
+            if lang == "en":
+                return s, True
+            if not best:
+                best = s
+        return best, False
 
     terms_rows = []
     hier_rows = []
@@ -363,7 +377,7 @@ def export_parquet_skos(name: str, info: dict) -> int:
     for concept in concepts:
         tid = str(concept)
 
-        # Get label (prefer English)
+        # Get label (prefer English). Try vanilla SKOS first, then SKOS-XL.
         label = ""
         for _, _, o in g.triples((concept, SKOS.prefLabel, None)):
             lbl = str(o)
@@ -372,6 +386,19 @@ def export_parquet_skos(name: str, info: dict) -> int:
                 label = lbl
                 if lang == "en":
                     break
+        if not label:
+            fallback = ""
+            for _, _, xl in g.triples((concept, SKOSXL.prefLabel, None)):
+                resolved, is_en = _xl_literal(xl)
+                if not resolved:
+                    continue
+                if is_en:
+                    label = resolved
+                    break
+                if not fallback:
+                    fallback = resolved
+            if not label:
+                label = fallback
 
         # Get definition
         definition = ""
@@ -386,12 +413,16 @@ def export_parquet_skos(name: str, info: dict) -> int:
             if definition:
                 break
 
-        # Get synonyms (altLabels)
+        # Get synonyms (altLabels). Try vanilla SKOS, then SKOS-XL.
         synonyms = []
         for _, _, o in g.triples((concept, SKOS.altLabel, None)):
             lang = getattr(o, "language", None)
             if lang is None or lang == "en":
                 synonyms.append(str(o))
+        for _, _, xl in g.triples((concept, SKOSXL.altLabel, None)):
+            resolved, is_en = _xl_literal(xl)
+            if is_en and resolved and resolved not in synonyms:
+                synonyms.append(resolved)
 
         terms_rows.append({
             "id": tid,

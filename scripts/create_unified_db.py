@@ -42,6 +42,9 @@ RETWATCH_PARQUET = ROOT / "datasets" / "retractionwatch" / "parquet"
 ROS_PARQUET = ROOT / "datasets" / "reliance_on_science" / "parquet"
 P2P_PARQUET = ROOT / "datasets" / "preprint_to_paper" / "parquet"
 FULLTEXT_PARQUET = ROOT / "datasets" / "fulltext" / "parquet"
+USPTO_PARQUET = ROOT / "datasets" / "uspto" / "parquet"
+EPO_PARQUET = ROOT / "datasets" / "epo" / "parquet"
+LENS_PARQUET = ROOT / "datasets" / "lens" / "parquet"
 
 try:
     from ontology_registry import ALL_ONTOLOGY_NAMES as ONTOLOGY_NAMES
@@ -454,6 +457,117 @@ def create_ontology_views(conn: duckdb.DuckDBPyConnection) -> list[str]:
     return all_views
 
 
+def create_uspto_views(conn: duckdb.DuckDBPyConnection) -> list[str]:
+    """Create USPTO PatentsView schema and views (auto-discover parquet subdirs)."""
+    conn.execute("CREATE SCHEMA IF NOT EXISTS uspto")
+    views = []
+
+    if not USPTO_PARQUET.exists():
+        return views
+
+    # Auto-discover all parquet subdirectories
+    for table_dir in sorted(USPTO_PARQUET.iterdir()):
+        if not table_dir.is_dir():
+            continue
+        parquet_files = list(table_dir.glob("*.parquet"))
+        if not parquet_files:
+            continue
+        table_name = table_dir.name
+        path = table_dir / "*.parquet"
+        conn.execute(
+            f"CREATE VIEW uspto.{table_name} AS "
+            f"SELECT * FROM read_parquet('{path}')"
+        )
+        views.append(f"uspto.{table_name}")
+
+    # Convenience: patent-to-RoS ID normalization view
+    if "uspto.patents" in views:
+        conn.execute("""
+            CREATE VIEW uspto.patents_with_ros_id AS
+            SELECT *,
+                'US-' || patent_id AS ros_patent_id
+            FROM uspto.patents
+        """)
+        views.append("uspto.patents_with_ros_id")
+
+    # Full-text view: truncated description (for querying)
+    if "uspto.fulltext" in views:
+        conn.execute("""
+            CREATE VIEW uspto.fulltext_compact AS
+            SELECT patent_id, kind, date, year, cpc_section, num_claims,
+                   title, abstract, claims, description
+            FROM uspto.fulltext
+        """)
+        views.append("uspto.fulltext_compact")
+
+    return views
+
+
+def create_epo_views(conn: duckdb.DuckDBPyConnection) -> list[str]:
+    """Create EPO DOCDB/INPADOC schema and views (auto-discover parquet subdirs)."""
+    conn.execute("CREATE SCHEMA IF NOT EXISTS epo")
+    views = []
+
+    if not EPO_PARQUET.exists():
+        return views
+
+    # Auto-discover all parquet subdirectories
+    for table_dir in sorted(EPO_PARQUET.iterdir()):
+        if not table_dir.is_dir():
+            continue
+
+        table_name = table_dir.name
+
+        # Check for direct parquet files
+        parquet_files = list(table_dir.glob("*.parquet"))
+        if parquet_files:
+            path = table_dir / "*.parquet"
+            conn.execute(
+                f"CREATE VIEW epo.{table_name} AS "
+                f"SELECT * FROM read_parquet('{path}')"
+            )
+            views.append(f"epo.{table_name}")
+            continue
+
+        # Check for year-partitioned subdirectories (e.g., fulltext/2024/*.parquet)
+        sub_parquets = list(table_dir.glob("*/*.parquet"))
+        if sub_parquets:
+            path = table_dir / "*" / "*.parquet"
+            conn.execute(
+                f"CREATE VIEW epo.{table_name} AS "
+                f"SELECT * FROM read_parquet('{path}')"
+            )
+            views.append(f"epo.{table_name}")
+
+    return views
+
+
+def create_lens_views(conn: duckdb.DuckDBPyConnection) -> list[str]:
+    """Create Lens.org schema and views (auto-discover parquet subdirs)."""
+    conn.execute("CREATE SCHEMA IF NOT EXISTS lens")
+    views = []
+
+    if not LENS_PARQUET.exists():
+        return views
+
+    # Auto-discover all parquet subdirectories
+    for table_dir in sorted(LENS_PARQUET.iterdir()):
+        if not table_dir.is_dir():
+            continue
+        parquet_files = list(table_dir.glob("*.parquet"))
+        if not parquet_files:
+            continue
+        table_name = table_dir.name
+        path = table_dir / "*.parquet"
+        conn.execute(
+            f"CREATE VIEW lens.{table_name} AS "
+            f"SELECT * FROM read_parquet('{path}')"
+        )
+        views.append(f"lens.{table_name}")
+
+    return views
+
+
 def create_fulltext_views(conn: duckdb.DuckDBPyConnection) -> list[str]:
     """Create fulltext schema and views for unified full-text paper data."""
     conn.execute("CREATE SCHEMA IF NOT EXISTS fulltext")
@@ -504,6 +618,9 @@ def create_xref_views(
     pwc_views: list[str],
     retwatch_views: list[str],
     p2p_views: list[str],
+    uspto_views: list[str] = None,
+    epo_views: list[str] = None,
+    lens_views: list[str] = None,
     materialize: bool = False,
 ) -> list[str]:
     """Create cross-reference schema for DOI-based linking.
@@ -623,6 +740,99 @@ def create_xref_views(
         )
         views.append("xref.ontology_bridges")
 
+    # Patent ID normalization map (bridges RoS, PatentsView, and EPO ID formats)
+    if uspto_views is None:
+        uspto_views = []
+    if epo_views is None:
+        epo_views = []
+    if lens_views is None:
+        lens_views = []
+
+    patent_map_parts = []
+    if "uspto.patents" in uspto_views:
+        patent_map_parts.append(
+            "SELECT 'US-' || patent_id AS ros_id, "
+            "patent_id AS patentsview_id, "
+            "'US' || patent_id AS docdb_id, "
+            "'uspto' AS source "
+            "FROM uspto.patents"
+        )
+    if "epo.publications" in epo_views:
+        patent_map_parts.append(
+            "SELECT country || '-' || doc_number AS ros_id, "
+            "CASE WHEN country = 'US' THEN doc_number ELSE NULL END AS patentsview_id, "
+            "doc_id AS docdb_id, "
+            "'epo' AS source "
+            "FROM epo.publications"
+        )
+
+    if "lens.patent_meta" in lens_views:
+        patent_map_parts.append(
+            "SELECT jurisdiction || '-' || doc_number AS ros_id, "
+            "CASE WHEN jurisdiction = 'US' THEN doc_number ELSE NULL END AS patentsview_id, "
+            "jurisdiction || doc_number || COALESCE(kind, '') AS docdb_id, "
+            "'lens' AS source "
+            "FROM lens.patent_meta"
+        )
+
+    if patent_map_parts:
+        patent_map_sql = " UNION ALL ".join(patent_map_parts)
+        conn.execute(f"CREATE VIEW xref.patent_id_map AS {patent_map_sql}")
+        views.append("xref.patent_id_map")
+
+    # Patent-scholarly bridge: unified view combining Lens NPL + Lens scholarly + RoS
+    bridge_parts = []
+    if "lens.patent_npl_citations" in lens_views:
+        bridge_parts.append(
+            "SELECT patent_lens_id AS patent_id, "
+            "COALESCE(doi, scholarly_lens_id) AS paper_id, "
+            "doi, "
+            "'patent_cites_paper' AS direction, "
+            "cited_phase, category, "
+            "'lens_npl' AS source "
+            "FROM lens.patent_npl_citations "
+            "WHERE scholarly_lens_id IS NOT NULL OR doi IS NOT NULL"
+        )
+    if "lens.scholarly_patent_citations" in lens_views:
+        bridge_parts.append(
+            "SELECT patent_lens_id AS patent_id, "
+            "COALESCE(doi, scholarly_lens_id) AS paper_id, "
+            "doi, "
+            "'paper_cited_by_patent' AS direction, "
+            "NULL AS cited_phase, NULL AS category, "
+            "'lens_scholarly' AS source "
+            "FROM lens.scholarly_patent_citations"
+        )
+    # Check if RoS pcs_oa view exists for the bridge
+    ros_tables = {r[0] for r in conn.execute(
+        "SELECT table_schema || '.' || table_name FROM information_schema.tables "
+        "WHERE table_schema = 'ros'"
+    ).fetchall()}
+    if "ros.pcs_oa" in ros_tables:
+        bridge_parts.append(
+            "SELECT patent AS patent_id, "
+            "'https://openalex.org/W' || CAST(oaid AS VARCHAR) AS paper_id, "
+            "NULL AS doi, "
+            "'patent_cites_paper' AS direction, "
+            "NULL AS cited_phase, NULL AS category, "
+            "'ros' AS source "
+            "FROM ros.pcs_oa"
+        )
+
+    if bridge_parts:
+        bridge_sql = " UNION ALL ".join(bridge_parts)
+        conn.execute(f"CREATE VIEW xref.patent_scholarly_bridge AS {bridge_sql}")
+        views.append("xref.patent_scholarly_bridge")
+
+    # Patent families cross-reference (EPO family grouping)
+    if "epo.families" in epo_views:
+        conn.execute("""
+            CREATE VIEW xref.patent_families AS
+            SELECT family_id, doc_id, country, doc_number, kind
+            FROM epo.families
+        """)
+        views.append("xref.patent_families")
+
     # Temporal coverage metadata per source
     conn.execute("""
         CREATE VIEW xref.source_temporal_coverage AS
@@ -634,7 +844,10 @@ def create_xref_views(
             ('retwatch',  1927, 2024, 'retracted_papers', 'Retraction events; ongoing curation'),
             ('ros',       1947, 2023, 'patent_pairs',    'Patent-to-paper citations; patent processing lag'),
             ('p2p',       2013, 2024, 'preprint_maps',   'bioRxiv/medRxiv preprint-to-published DOI mappings'),
-            ('crossref',  NULL, NULL, 'doi_metadata',    'DOI metadata and reference lists; no temporal bound')
+            ('crossref',  NULL, NULL, 'doi_metadata',    'DOI metadata and reference lists; no temporal bound'),
+            ('uspto',     1976, 2024, 'us_patents',      'US utility patents via PatentsView; quarterly updates'),
+            ('epo',       NULL, NULL, 'global_patents',  'Global patent bibliographic data from 100+ offices via DOCDB'),
+            ('lens',      NULL, NULL, 'patent_scholarly_links', 'Bidirectional patent-scholarly linkage; 100+ jurisdictions; citation phase metadata')
         ) AS t(source, year_min, year_max, coverage_type, note)
     """)
     views.append("xref.source_temporal_coverage")
@@ -755,6 +968,27 @@ def create_database(materialize: bool = False):
     else:
         print("  No parquet data found")
 
+    print("[USPTO PatentsView]")
+    uspto_views = create_uspto_views(conn)
+    if uspto_views:
+        print(f"  Created {len(uspto_views)} views")
+    else:
+        print("  No parquet data found (run download_patentsview.py + convert_patentsview.py)")
+
+    print("[EPO DOCDB/INPADOC]")
+    epo_views = create_epo_views(conn)
+    if epo_views:
+        print(f"  Created {len(epo_views)} views")
+    else:
+        print("  No parquet data found (run download_epo_bulk.py + convert_epo_docdb.py)")
+
+    print("[Lens.org]")
+    lens_views = create_lens_views(conn)
+    if lens_views:
+        print(f"  Created {len(lens_views)} views")
+    else:
+        print("  No parquet data found (run download_lens.py + convert_lens.py)")
+
     print("[Full-Text Papers]")
     fulltext_views = create_fulltext_views(conn)
     if fulltext_views:
@@ -766,6 +1000,7 @@ def create_database(materialize: bool = False):
     xref_views = create_xref_views(
         conn, s2ag_views, sciscinet_views, openalex_views, pwc_views,
         retwatch_views, p2p_views,
+        uspto_views=uspto_views, epo_views=epo_views, lens_views=lens_views,
         materialize=materialize,
     )
     print(f"  Created {len(xref_views)} views/tables")
@@ -778,6 +1013,7 @@ def create_database(materialize: bool = False):
 
     all_views = [s2ag_views, sciscinet_views, openalex_views, pwc_views,
                  ontology_views, retwatch_views, ros_views, p2p_views,
+                 uspto_views, epo_views, lens_views,
                  fulltext_views, xref_views, compat_views]
     total = sum(len(v) for v in all_views)
     db_size = DB_PATH.stat().st_size / 1024

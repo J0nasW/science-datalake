@@ -162,6 +162,43 @@
       "source_url": "https://zbw.eu/stw/",
       "type": "ontology"
     },
+    "cpc_taxonomy": {
+      "path": "datasets/cpc_taxonomy",
+      "parquet_path": "datasets/cpc_taxonomy/parquet",
+      "full_name": "Cooperative Patent Classification (CPC)",
+      "release": "2026-01",
+      "format": "parquet",
+      "source_url": "https://www.cooperativepatentclassification.org/cpcSchemeAndDefinitions/bulk",
+      "license": "Public domain (joint USPTO/EPO)",
+      "type": "ontology"
+    },
+    "uspto": {
+      "path": "datasets/uspto",
+      "parquet_path": "datasets/uspto/parquet",
+      "full_name": "USPTO PatentsView",
+      "release": "2024-Q4",
+      "format": "parquet",
+      "source_url": "https://patentsview.org/download/data-download-tables",
+      "license": "Public domain"
+    },
+    "epo": {
+      "path": "datasets/epo",
+      "parquet_path": "datasets/epo/parquet",
+      "full_name": "EPO DOCDB & INPADOC",
+      "release": "2025",
+      "format": "parquet",
+      "source_url": "https://www.epo.org/en/searching-for-patents/data/bulk-data-sets",
+      "license": "Free (EPO terms apply)"
+    },
+    "lens": {
+      "path": "datasets/lens",
+      "parquet_path": "datasets/lens/parquet",
+      "full_name": "Lens.org Patent-Scholarly Linkage",
+      "format": "parquet",
+      "source_url": "https://www.lens.org/",
+      "license": "ITK institutional subscription",
+      "description": "Bidirectional patent-scholarly citation linkage with resolved IDs, citation phase metadata, and 100+ jurisdiction coverage."
+    },
     "fulltext": {
       "path": "datasets/fulltext",
       "parquet_path": "datasets/fulltext/parquet",

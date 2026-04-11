@@ -57,6 +57,9 @@ def check_available_datasets(conn):
         "retwatch": "retwatch.retraction_watch" in available,
         "ros": "ros.patent_paper_pairs" in available,
         "p2p": "p2p.preprint_to_paper" in available,
+        "uspto": "uspto.patents" in available,
+        "epo": "epo.publications" in available,
+        "lens": "lens.scholarly_patent_citations" in available,
     }
 
     print("Available datasets:")
@@ -263,6 +266,53 @@ def materialize(conn, output_dir: Path, dry_run: bool = False):
             n = conn.execute("SELECT COUNT(*) FROM ros_papers").fetchone()[0]
             print(f"  RoS: {n:,} papers with patents ({time.time()-t1:.1f}s)")
 
+    # Patent enrichment: count distinct patent families citing each paper (via RoS + EPO)
+    if datasets["ros"] and datasets["uspto"]:
+        patent_enrich_sql = """
+        CREATE OR REPLACE TEMP TABLE patent_enrichment AS
+        WITH ros_patents AS (
+            SELECT
+                'https://openalex.org/W' || CAST(oaid AS VARCHAR) AS openalex_id,
+                patent AS ros_patent_id
+            FROM ros.pcs_oa
+        )
+        SELECT
+            rp.openalex_id,
+            COUNT(DISTINCT rp.ros_patent_id) AS patent_citation_count,
+            COUNT(DISTINCT c.section) AS patent_technology_domain_count
+        FROM ros_patents rp
+        LEFT JOIN uspto.cpc_current c
+            ON REPLACE(rp.ros_patent_id, 'US-', '') = c.patent_id
+        GROUP BY rp.openalex_id
+        """
+        if dry_run:
+            print(f"\n-- Patent Enrichment\n{patent_enrich_sql};\n")
+        else:
+            t1 = time.time()
+            conn.execute(patent_enrich_sql)
+            n = conn.execute("SELECT COUNT(*) FROM patent_enrichment").fetchone()[0]
+            print(f"  Patent enrichment: {n:,} papers with patent data ({time.time()-t1:.1f}s)")
+
+    # Lens: count patent citations per paper via DOI
+    if datasets["lens"]:
+        lens_sql = """
+        CREATE OR REPLACE TEMP TABLE lens_keyed AS
+        SELECT
+            lm.doi,
+            COUNT(DISTINCT spc.patent_lens_id) AS lens_patent_citation_count
+        FROM lens.scholarly_patent_citations spc
+        JOIN lens.id_map lm ON spc.scholarly_lens_id = lm.lens_id
+        WHERE lm.doi IS NOT NULL
+        GROUP BY lm.doi
+        """
+        if dry_run:
+            print(f"\n-- Lens\n{lens_sql};\n")
+        else:
+            t1 = time.time()
+            conn.execute(lens_sql)
+            n = conn.execute("SELECT COUNT(*) FROM lens_keyed").fetchone()[0]
+            print(f"  Lens: {n:,} papers with patent citations ({time.time()-t1:.1f}s)")
+
     # ── Step 3: Build the unified join ───────────────────────────────────
 
     print("Step 3: Joining all sources...")
@@ -392,6 +442,31 @@ def materialize(conn, output_dir: Path, dry_run: bool = False):
         joins.append("LEFT JOIN ros_papers ros ON oa.openalex_id = ros.openalex_id")
     else:
         flags.append("false AS has_patent")
+
+    if datasets.get("lens"):
+        flags.append("lk.doi IS NOT NULL AS has_lens")
+    else:
+        flags.append("false AS has_lens")
+
+    # Patent enrichment columns (if available)
+    if datasets["ros"] and datasets.get("uspto"):
+        select_cols.extend([
+            "pe.patent_citation_count",
+            "pe.patent_technology_domain_count",
+        ])
+        joins.append("LEFT JOIN patent_enrichment pe ON oa.openalex_id = pe.openalex_id")
+    else:
+        select_cols.extend([
+            "NULL::BIGINT AS patent_citation_count",
+            "NULL::BIGINT AS patent_technology_domain_count",
+        ])
+
+    # Lens patent citation count
+    if datasets.get("lens"):
+        select_cols.append("lk.lens_patent_citation_count")
+        joins.append("LEFT JOIN lens_keyed lk ON d.doi = lk.doi")
+    else:
+        select_cols.append("NULL::BIGINT AS lens_patent_citation_count")
 
     select_cols.extend(flags)
 
